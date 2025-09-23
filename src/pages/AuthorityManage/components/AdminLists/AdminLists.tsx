@@ -9,7 +9,7 @@ type AdminListsProps = {
   dataSource: AdminRow[];
   loading: boolean;
   user_type: 'super_admin' | 'admin' | 'normal';
-  changeUserIdentity(email: string, user_type: string, user_type_cn: string): void;
+  changeUserIdentity: (email: string, user_type: string, user_type_cn: string) => void;
 };
 const AdminLists: React.FC<AdminListsProps> = ({
   header,

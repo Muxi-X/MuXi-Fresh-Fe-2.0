@@ -30,6 +30,7 @@ export async function post(url = '', data = {}, isToken = true) {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return response.json();
 }
 
@@ -61,6 +62,7 @@ export async function get(url = '', isToken = true) {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return response.json();
 }
 
@@ -92,6 +94,7 @@ export async function put(url = '', data = {}, isToken = true) {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return response.json();
 }
 
@@ -115,5 +118,6 @@ export async function postPwd(url = '', data = {}, token: string) {
     throw new Error(`${response.status}`);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return response.json();
 }

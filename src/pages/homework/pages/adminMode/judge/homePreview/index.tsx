@@ -10,7 +10,6 @@ import {
   TableType,
   TaskInfoType,
   userTaskResponseType,
-  userTaskType,
 } from '../../../../types';
 
 const { Meta } = Card;

@@ -18,7 +18,6 @@ const { Header, Content, Sider } = LayoutAntd;
 
 const muxi_logo =
   'https://ossfresh-test.muxixyz.com/%E5%B7%A6%E4%B8%8A%E8%A7%92%401x%281%29.png';
-const logo = 'https://muxi-fresh.muxixyz.com/fe-static/muxilogo.png';
 const defaultAvatar = 'https://muxi-fresh.muxixyz.com/fe-static/default_avatar.png';
 
 type LayoutProps = {
@@ -236,20 +235,6 @@ const Layout: React.FC<LayoutProps> = ({ identity, isForm }) => {
         }
       : null,
   ];
-
-  //底部图片列表
-  const imageMap: Record<string, string> = {
-    '/app/form':
-      'https://muxi-fresh.muxixyz.com/%E5%80%99%E8%A1%A5%E7%AE%B1%E6%A0%BC%402x.png', // 对应报名表的图片链接
-    '/app/review': 'https://muxi-fresh.muxixyz.com/sillyvg_g_0%402x.png', // 对应审阅的图片链接
-    '/app/authority-manage':
-      'https://muxi-fresh.muxixyz.com/%E6%89%BE%E4%B8%8D%E5%88%B0%E7%AE%B1%E6%A0%BC%402x.png', // 对应权限管理的图片链接
-  };
-
-  const defaultImage = 'https://muxi-fresh.muxixyz.com/sillyvg_g_0%402x%20%281%29.png'; // 默认图片链接
-
-  // 获取选中菜单项对应的图片，如果没有选中则显示默认图片
-  const selectedImage = imageMap[selectedMenuKey] || defaultImage;
 
   return (
     <div className={'layout'}>
