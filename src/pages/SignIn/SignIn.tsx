@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Input, Modal, message } from 'antd';
 import './SignIn.less';
-import { get, post, postPwd } from '../../fetch';
-import { CodeImg, VerifyResult } from './Captcha.ts';
+import { post, postPwd } from '../../fetch';
+// import { CodeImg, VerifyResult } from './Captcha.ts';
 import { useNavigate } from 'react-router-dom';
 import { SignInResult } from './SignIn.ts';
 import { ChangeUserInfoResult } from '../HomePage/UserInfo.ts';
@@ -10,8 +10,8 @@ import { GetAuthSetPasswordResult } from '../PersonalPage/PersonalPage.ts';
 import { SendEmailResult } from '../SignUp/SignUp.ts';
 
 const SignIn: React.FC = () => {
-  const [codeImg, setCodeImg] = useState('');
-  const [imgId, setImgId] = useState('');
+  // const [codeImg, setCodeImg] = useState('');
+  // const [imgId, setImgId] = useState('');
   const [account, setAccount] = useState('');
   const [password, setPassword] = useState('');
   const [verifyCode, setVerifyCode] = useState('');
