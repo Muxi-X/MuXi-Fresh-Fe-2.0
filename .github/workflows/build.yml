@@ -29,7 +29,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           # 指定 Node.js 的版本为 18.16.1
-          node-version: 18.16.1
+          # node-version: 18.16.1
+          node-version: 18.18.0
           cache: 'npm'
       - name: Install dependencies
         # 使用 yarn 来安装依赖包
