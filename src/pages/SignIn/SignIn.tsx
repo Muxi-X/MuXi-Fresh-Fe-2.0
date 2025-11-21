@@ -186,27 +186,28 @@ const SignIn: React.FC = () => {
       );
     } else {
       // 不是email就学号登录
-      const signInReq = {
-        student_id: account,
-        password: password,
-      };
-      post('/auth/ccnuLogin', signInReq, false).then(
-        (r: SignInResult) => {
-          if (r.code === 200) {
-            localStorage.setItem('token', r.data.token);
-            void message.success('登录成功！');
-            navigate('/app');
-          } else {
-            void message.error(`${r.msg}，请重试！`);
-            // getCodeImg();
-          }
-        },
-        (e) => {
-          console.error(e);
-          void message.error('登录失败，请重试！');
-          // getCodeImg();
-        },
-      );
+      // const signInReq = {
+      //   student_id: account,
+      //   password: password,
+      // };
+      // post('/auth/ccnuLogin', signInReq, false).then(
+      //   (r: SignInResult) => {
+      //     if (r.code === 200) {
+      //       localStorage.setItem('token', r.data.token);
+      //       void message.success('登录成功！');
+      //       navigate('/app');
+      //     } else {
+      //       void message.error(`${r.msg}，请重试！`);
+      //       // getCodeImg();
+      //     }
+      //   },
+      //   (e) => {
+      //     console.error(e);
+      //     void message.error('登录失败，请重试！');
+      //     // getCodeImg();
+      //   },
+      // );
+      void message.error('请使用邮箱登录');
     }
   };
 
