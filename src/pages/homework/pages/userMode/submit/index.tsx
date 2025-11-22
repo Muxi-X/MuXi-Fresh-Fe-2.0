@@ -48,7 +48,7 @@ const HomeworkUserSubmit: React.FC = () => {
   const selectList = defList.map((_, index) => {
     return {
       value: index,
-      label: '提交'+(index+1),
+      label: '提交' + index,
     };
   });
 
@@ -71,7 +71,7 @@ const HomeworkUserSubmit: React.FC = () => {
               get(
                 `/task/submitted?user_id=myself&assigned_task_id=${taskList[0].id}`,
               ).then((resp: backType<userTaskResponseType>) => {
-                console.log(resp.data?.submission_infos, '提交记录');
+                console.log(resp.data.submission_infos, '提交记录');
 
                 if (
                   resp.data?.submission_infos &&
@@ -191,7 +191,7 @@ const HomeworkUserSubmit: React.FC = () => {
           status={status}
           group={group.value}
           onSubmit={debounce(handleSubmit, 400)}
-          submitDisabled={isDeadlinePassed(currentDeadline)}
+          submitDisabled={status == 2 || isDeadlinePassed(currentDeadline)}
           className={'user-submit-preview-small'}
           deadlineAvailable={true}
           button_title="提交作业"
@@ -210,7 +210,7 @@ const HomeworkUserSubmit: React.FC = () => {
             type="file"
             label="上传作业"
             defaultValue={defList[version]?.urls || defList[0]?.urls || []}
-            disabled={(taskList && !taskList[0].id)}
+            disabled={status == 2 || (taskList && !taskList[0].id)}
             onChange={(files) => handleChangeUpload(files as UploadProps['fileList'])}
           ></InputBox>
         </UploadSection>

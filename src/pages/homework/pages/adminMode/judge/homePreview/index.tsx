@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Avatar, Card, Select } from 'antd';
+import { Avatar, Card } from 'antd';
 import './index.less';
 import Title from '../../../../components/title';
 import FileLink from '../../../../components/files/index';
@@ -9,6 +9,7 @@ import {
   backType,
   TableType,
   TaskInfoType,
+  userTaskResponseType,
   userTaskType,
 } from '../../../../types';
 
@@ -20,12 +21,10 @@ interface TagListProps {
 }
 interface HomePreviewProps {
   info: TableType;
-  version:number;
-  submissionInfo:userTaskType[];
-  // getSubmittionID?: (str: string) => void;
+  getSubmittionID?: (str: string) => void;
 }
 const HomePreview: React.FC<HomePreviewProps> = (props) => {
-  const {info,version,submissionInfo} = props;
+  const { info, getSubmittionID } = props;
   const [loading, setLoading] = useState(true);
   const [groupName, setgroupName] = useState<string>('');
   const [urls, seturls] = useState<string[]>(['']);
@@ -34,10 +33,10 @@ const HomePreview: React.FC<HomePreviewProps> = (props) => {
     content: '',
     urls: [],
   });
-  
   /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
-    
+    console.log(info, info.version - 1);
+
     defData.forEach((item) => {
       if (item.value == info?.group) {
         setgroupName(item.key);
@@ -46,17 +45,24 @@ const HomePreview: React.FC<HomePreviewProps> = (props) => {
     info?.task_id &&
       get(`/task/assigned/${info?.task_id}`).then((res: backType<TaskInfoType>) => {
         setPreview(res.data);
+        get(
+          `/task/submitted?user_id=${info?.user_id}&assigned_task_id=${info?.task_id}`,
+        ).then((res: backType<userTaskResponseType>) => {
+          seturls(
+            res.data.submission_infos.length > 0
+              ? res.data.submission_infos[info.version - 1].urls
+              : [],
+          );
+          getSubmittionID &&
+            getSubmittionID(
+              res.data.submission_infos.length > 0
+                ? (res.data.submission_infos[info.version - 1].submission_id as string)
+                : '',
+            );
+        }, null);
       }, null);
-    setLoading(false);
+    setLoading(!loading);
   }, []);
-  
-  // 监听submissionInfo和version变化，更新urls
-  useEffect(() => {
-    if(submissionInfo.length>0 && version > 0){
-      seturls(submissionInfo[version-1].urls || [])
-    }
-  }, [submissionInfo, version]);
-  
   return (
     <>
       <Card
@@ -69,7 +75,6 @@ const HomePreview: React.FC<HomePreviewProps> = (props) => {
         }
         loading={loading}
       >
-        
         <div className="homePreview-card">
           <TagList tag_name="作业描述">
             <div className="description-card">{Preview?.title_text}</div>
