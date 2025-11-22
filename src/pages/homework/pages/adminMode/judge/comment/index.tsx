@@ -28,7 +28,7 @@ const HomeComment: React.FC<HTMLAttributes<HTMLDivElement> & CommentProps> = (pr
     setTimeout(() => {
       setLoading(false);
     }, 1000);
-  }, [CommentData]);
+  }, [CommentData,SubmitId]);
 
   //切换回复按钮状态：
   function toggleOpenReply(comment_id: string) {
@@ -45,20 +45,7 @@ const HomeComment: React.FC<HTMLAttributes<HTMLDivElement> & CommentProps> = (pr
     }));
   }
 
-  function handlePulishComment() {
-    post(`/task/submitted/${SubmitId}/comment`, {
-      id: SubmitId,
-      content: comment,
-    })
-      .then((res) => {
-        console.log(res.data, '发表评论成功');
-        setComment('');
-        onCommentSuccess?.();
-      })
-      .catch((err) => {
-        console.error(err, '发表评论失败');
-      });
-  }
+
 
   async function handlePublishReply(comment_id: string, content: string) {
     try {
@@ -100,7 +87,7 @@ const HomeComment: React.FC<HTMLAttributes<HTMLDivElement> & CommentProps> = (pr
           className="comment-wrap"
           renderItem={(item, index) => (
             <List.Item key={index}>
-              {/* 根评论 */}
+              
               <Card
                 style={{ width: '90%', margin: 'auto', whiteSpace: 'pre-wrap' }}
                 loading={loading}
@@ -186,23 +173,7 @@ const HomeComment: React.FC<HTMLAttributes<HTMLDivElement> & CommentProps> = (pr
             </List.Item>
           )}
         />
-        <div className="comment-box">
-          <Input
-            className="comment-input"
-            suffix={
-              <img
-                src="https://ossfresh-test.muxixyz.com/%E5%AE%B9%E5%99%A8%404x%20%284%29.png"
-                className="submit-suffix"
-                onClick={debounce(handlePulishComment, 400)}
-              />
-            }
-            placeholder="发表一下你的评论吧..."
-            value={comment}
-            onChange={(e) => {
-              setComment(e.target.value);
-            }}
-          />
-        </div>
+        
       </Card>
     </div>
   );

@@ -192,6 +192,7 @@ const UploadSection: React.FC<UploadSectionProps> = (props) => {
                   text: str as string,
                 })
               }
+              
             ></InputBox>
           ) : (
             <DropDown
