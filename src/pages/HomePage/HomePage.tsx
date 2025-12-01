@@ -209,7 +209,7 @@ const ShowInfo = ({ changeEditState }: { changeEditState: () => void }) => {
           )}
         </div>
         <div className="change-info-btn" onClick={changeEditState}>
-          个人信息
+          修改
         </div>
       </div>
       <Modal

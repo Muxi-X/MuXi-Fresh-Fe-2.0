@@ -111,6 +111,7 @@ export type userTaskResponseType = {
 export type userTaskType = {
   urls: string[];
   submission_id?: string;
+  time:string
 };
 export type cmtType = {
   comments: CommentType[];
