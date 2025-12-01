@@ -30,6 +30,7 @@ const HomeworkUserSubmit: React.FC = () => {
   const [defList, setdefList] = useState<Array<userTaskType>>([]);
   const [formData, setformData] = useState<string[]>(['']);
   const [selected, setselected] = useState<string>('');
+  const [submitTime,setSubmitTime]=useState<string>('')
   const [group, setGroup] = useState<dataType>({ key: '后端组', value: 'Backend' });
   const [Comment, setComment] = useState<CommentType[]>([]);
   const [currentSubmissionId, setCurrentSubmissionId] = useState<string>('');
@@ -81,6 +82,7 @@ const HomeworkUserSubmit: React.FC = () => {
                   setCurrentSubmissionId(
                     resp.data.submission_infos[version].submission_id || '',
                   );
+                  setSubmitTime(resp.data.submission_infos[version].time || '')
                   getComment(resp.data.submission_infos[version].submission_id || '');
                 }
               }, null);
@@ -95,14 +97,15 @@ const HomeworkUserSubmit: React.FC = () => {
 
   const handleVersionChange = (value: number) => {
     if (defList.length === 0) return;
-    console.log(value);
+    
     setCurrentSubmissionId(defList[value].submission_id || '');
     setVersion(value);
-    console.log(defList[value].urls);
+    setSubmitTime(defList[value].time || '')
+    getComment(defList[value].submission_id || '')
   };
 
   const handleSubmit = () => {
-    if (status != 2 && formData[0]) {
+    if (formData[0]) {
       console.log(formData);
       post(`/task/submitted`, {
         urls: formData,
@@ -148,6 +151,7 @@ const HomeworkUserSubmit: React.FC = () => {
               setVersion(0);
               setCurrentSubmissionId(resp.data.submission_infos[0].submission_id || '');
               getComment(resp.data.submission_infos[0].submission_id || '');
+              setSubmitTime(resp.data.submission_infos[0].time || '')
             } else {
               setdefList([]);
               setCurrentSubmissionId('');
@@ -197,12 +201,17 @@ const HomeworkUserSubmit: React.FC = () => {
           button_title="提交作业"
         >
           {selectList.length > 0 && (
-            <Select
-              options={selectList}
-              onChange={handleVersionChange}
-              value={selectList[version]?.value || selectList[0]?.value}
-              className="select-version"
-            ></Select>
+            <div className='select'>
+              <div className='time'>{submitTime}</div>
+              <Select
+                options={selectList}
+                onChange={handleVersionChange}
+                value={selectList[version]?.value || selectList[0]?.value}
+                className="select-version"
+              ></Select>
+              
+            </div>
+            
           )}
           <InputBox
             key={version}

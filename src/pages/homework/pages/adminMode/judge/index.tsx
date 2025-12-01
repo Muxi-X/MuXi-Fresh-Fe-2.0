@@ -11,6 +11,7 @@ import { get, post } from '../../../../../fetch.ts';
 const HomeworkJudge: React.FC = () => {
   const [Comment, setComment] = useState<CommentType[]>([]);
   const [SubmitID, setSubmitID] = useState<string>('');
+  const [time,setTime]=useState<String>('');
   const nav = useNavigate();
   const [searchParams] = useSearchParams();
   const infoItem = JSON.parse(
@@ -37,7 +38,7 @@ const HomeworkJudge: React.FC = () => {
 
         setSubmissionInfo(res.data.submission_infos)
         setSubmitID(res.data.submission_infos.length>0?res.data.submission_infos[version-1].submission_id || "":"")
-        
+        setTime(res.data.submission_infos.length>0?res.data.submission_infos[version-1].time || "":"")
       }, null);
     }
     
@@ -64,6 +65,7 @@ const HomeworkJudge: React.FC = () => {
   function onChangeVersion(value:number){
     setVersion(value)
     setSubmitID(submissionInfo.length>0?submissionInfo[value-1].submission_id || "":"")
+    setTime(submissionInfo.length>0?submissionInfo[value-1].time || "":"")
   }
 
   var versionList=submissionInfo.map((_,index)=>{
@@ -76,7 +78,11 @@ const HomeworkJudge: React.FC = () => {
 
   return (
     <div className="judge-wrap">
-      <Select className='select' onChange={onChangeVersion} options={versionList} defaultValue={1}></Select>
+      <div className='header'>
+        <div className='time'>{time}</div>
+        <Select className='select' onChange={onChangeVersion} options={versionList} defaultValue={1}></Select>
+      </div>
+      
       <div className="preview">
         <HomePreview  info={infoItem} version={version} submissionInfo={submissionInfo}></HomePreview>
       </div>
