@@ -18,6 +18,7 @@ import {
 import { message, Select, UploadProps } from 'antd';
 import { defData } from '../../../utils/deData';
 import InputBox from '../../../components/input';
+import CodePenInput from '../../../components/codepen';
 import './index.less';
 import HomeComment from '../../adminMode/judge/comment';
 import { getCurrentSeason } from '../../../../../utils/GetYearSeason/getReviewYear.ts';
@@ -213,15 +214,24 @@ const HomeworkUserSubmit: React.FC = () => {
             </div>
             
           )}
-          <InputBox
-            key={version}
-            className="inp"
-            type="file"
-            label="上传作业"
-            defaultValue={defList[version]?.urls || defList[0]?.urls || []}
-            disabled={(taskList && !taskList[0].id)}
-            onChange={(files) => handleChangeUpload(files as UploadProps['fileList'])}
-          ></InputBox>
+          {group.value === 'Frontend' ? (
+            <CodePenInput
+              key={version}
+              defaultValue={defList[version]?.urls?.[0] || ''}
+              disabled={taskList && !taskList[0].id}
+              onChange={(url) => setformData(url ? [url] : [''])}
+            />
+          ) : (
+            <InputBox
+              key={version}
+              className="inp"
+              type="file"
+              label="上传作业"
+              defaultValue={defList[version]?.urls || defList[0]?.urls || []}
+              disabled={(taskList && !taskList[0].id)}
+              onChange={(files) => handleChangeUpload(files as UploadProps['fileList'])}
+            ></InputBox>
+          )}
         </UploadSection>
         {defList.length > 0 && (
           <HomeComment

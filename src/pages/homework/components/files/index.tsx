@@ -2,6 +2,7 @@ import React from 'react';
 import { TagList } from '../../pages/adminMode/judge/homePreview';
 import { InboxOutlined, PaperClipOutlined } from '@ant-design/icons';
 import { List } from 'antd';
+import { isCodePenUrl, getCodePenEmbedUrl } from '../../utils/codepen';
 import './index.less';
 
 interface FileLinkProps {
@@ -11,6 +12,21 @@ interface FileLinkProps {
   innerClass?: string;
   preview?: boolean;
 }
+
+const CodePenEmbed: React.FC<{ url: string }> = ({ url }) => {
+  return (
+    <div className="codepen-embed-file">
+      <iframe
+        className="codepen-embed-iframe"
+        src={getCodePenEmbedUrl(url)}
+        title="CodePen"
+        sandbox="allow-scripts allow-same-origin"
+        loading="lazy"
+      />
+    </div>
+  );
+};
+
 export const FileLinkPure: React.FC<FileLinkProps> = (props) => {
   const { data, innerClass, preview } = props;
   const renderText = (str: string) => {
@@ -22,6 +38,25 @@ export const FileLinkPure: React.FC<FileLinkProps> = (props) => {
       <div className={innerClass}>
         {data &&
           data.map((item, index) => {
+            // CodePen URL → render embedded iframe
+            if (isCodePenUrl(item)) {
+              return (
+                <div key={item} className="codepen-embed-wrapper">
+                  <CodePenEmbed url={item} />
+                  <a
+                    className="codepen-source-link"
+                    href={item}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    在 CodePen 中打开
+                  </a>
+                </div>
+              );
+            }
+
+            // Original file link rendering
             return (
               <List.Item className={preview ? 'file-pre' : 'file'} key={item}>
                 {preview ? (
