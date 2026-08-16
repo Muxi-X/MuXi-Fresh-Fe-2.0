@@ -6,6 +6,7 @@ import { root } from '../../../utils/deData.ts';
 import FileLink from '../../../components/files';
 import Uploader from '../../../components/upload';
 import CodePenInput from '../../../components/codepen';
+import { isCodePenUrl } from '../../../utils/codepen';
 import { debounce } from '../../../../../utils/Debounce/debounce.ts';
 
 interface SubmitBeforeJudgeMobileProps {
@@ -18,20 +19,24 @@ const SubmitCompMobile: React.FC<SubmitBeforeJudgeMobileProps> = (props) => {
   const [formData, setFormData] = useState<string[]>();
   const { currentTaskInfo, uploadHistory, currentTaskID, group } = props;
   const handleSubmit = () => {
-    if (currentTaskID) {
-      post(`/task/submitted`, {
-        assignedTaskID: currentTaskID,
-        urls: formData,
-      })
-        .then(() => {
-          message.success('提交成功').then(null, null);
-        })
-        .catch(() => {
-          message.error(`提交失败`).then(null, null);
-        });
-    } else {
+    if (!currentTaskID) {
       message.error('暂时还没有作业哦').then(null, null);
+      return;
     }
+    if (group === 'Frontend' && (!formData?.[0] || !isCodePenUrl(formData[0]))) {
+      message.error('请填写正确的 CodePen 链接').then(null, null);
+      return;
+    }
+    post(`/task/submitted`, {
+      assignedTaskID: currentTaskID,
+      urls: formData,
+    })
+      .then(() => {
+        message.success('提交成功').then(null, null);
+      })
+      .catch(() => {
+        message.error(`提交失败`).then(null, null);
+      });
   };
 
   const handleChangeUpload = (e: UploadProps['fileList']) => {

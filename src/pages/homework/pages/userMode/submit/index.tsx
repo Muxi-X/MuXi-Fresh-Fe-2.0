@@ -19,6 +19,7 @@ import { message, Select, UploadProps } from 'antd';
 import { defData } from '../../../utils/deData';
 import InputBox from '../../../components/input';
 import CodePenInput from '../../../components/codepen';
+import { isCodePenUrl } from '../../../utils/codepen';
 import './index.less';
 import HomeComment from '../../adminMode/judge/comment';
 import { getCurrentSeason } from '../../../../../utils/GetYearSeason/getReviewYear.ts';
@@ -106,22 +107,26 @@ const HomeworkUserSubmit: React.FC = () => {
   };
 
   const handleSubmit = () => {
-    if (formData[0]) {
-      console.log(formData);
-      post(`/task/submitted`, {
-        urls: formData,
-        assignedTaskID: selected,
-      })
-        .then(() => {
-          message.success('提交成功').then(null, null);
-          handleSwitch(selected);
-        })
-        .catch(() => {
-          message.error(`提交失败`).then(null, null);
-        });
-    } else if (!formData[0]) {
+    if (!formData[0]) {
       message.error('作业内容不能为空').then(null, null);
+      return;
     }
+    if (group.value === 'Frontend' && !isCodePenUrl(formData[0])) {
+      message.error('请填写正确的 CodePen 链接').then(null, null);
+      return;
+    }
+    console.log(formData);
+    post(`/task/submitted`, {
+      urls: formData,
+      assignedTaskID: selected,
+    })
+      .then(() => {
+        message.success('提交成功').then(null, null);
+        handleSwitch(selected);
+      })
+      .catch(() => {
+        message.error(`提交失败`).then(null, null);
+      });
   };
   const handleChangeUpload = (e: UploadProps['fileList']) => {
     if (e && e[0]) {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { TagList } from '../../pages/adminMode/judge/homePreview';
 import { InboxOutlined, PaperClipOutlined } from '@ant-design/icons';
 import { List } from 'antd';
@@ -14,13 +14,48 @@ interface FileLinkProps {
 }
 
 const CodePenEmbed: React.FC<{ url: string }> = ({ url }) => {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const handleChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener('fullscreenchange', handleChange);
+    return () => document.removeEventListener('fullscreenchange', handleChange);
+  }, []);
+
+  const handleFullscreen = () => {
+    const el = iframeRef.current;
+    if (!el) return;
+    if (document.fullscreenElement) {
+      void document.exitFullscreen();
+    } else if (el.requestFullscreen) {
+      void el.requestFullscreen();
+    }
+  };
+
   return (
     <div className="codepen-embed-file">
+      <div className="codepen-embed-toolbar">
+        <a
+          className="codepen-source-link"
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+        >
+          在 CodePen 中打开
+        </a>
+        <button className="codepen-fullscreen-btn" onClick={handleFullscreen}>
+          {isFullscreen ? '退出全屏' : '全屏'}
+        </button>
+      </div>
       <iframe
+        ref={iframeRef}
         className="codepen-embed-iframe"
         src={getCodePenEmbedUrl(url)}
         title="CodePen"
-        sandbox="allow-scripts allow-same-origin"
+        sandbox="allow-scripts allow-same-origin allow-fullscreen"
+        allowFullScreen
         loading="lazy"
       />
     </div>
@@ -43,15 +78,6 @@ export const FileLinkPure: React.FC<FileLinkProps> = (props) => {
               return (
                 <div key={item} className="codepen-embed-wrapper">
                   <CodePenEmbed url={item} />
-                  <a
-                    className="codepen-source-link"
-                    href={item}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    在 CodePen 中打开
-                  </a>
                 </div>
               );
             }
