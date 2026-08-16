@@ -5,31 +5,38 @@ import { message, UploadProps } from 'antd';
 import { root } from '../../../utils/deData.ts';
 import FileLink from '../../../components/files';
 import Uploader from '../../../components/upload';
+import CodePenInput from '../../../components/codepen';
+import { isCodePenUrl } from '../../../utils/codepen';
 import { debounce } from '../../../../../utils/Debounce/debounce.ts';
 
 interface SubmitBeforeJudgeMobileProps {
   currentTaskID: string | undefined;
   currentTaskInfo: TaskInfoType | undefined;
   uploadHistory: string[] | undefined;
+  group?: string;
 }
 const SubmitCompMobile: React.FC<SubmitBeforeJudgeMobileProps> = (props) => {
   const [formData, setFormData] = useState<string[]>();
-  const { currentTaskInfo, uploadHistory, currentTaskID } = props;
+  const { currentTaskInfo, uploadHistory, currentTaskID, group } = props;
   const handleSubmit = () => {
-    if (currentTaskID) {
-      post(`/task/submitted`, {
-        assignedTaskID: currentTaskID,
-        urls: formData,
-      })
-        .then(() => {
-          message.success('提交成功').then(null, null);
-        })
-        .catch(() => {
-          message.error(`提交失败`).then(null, null);
-        });
-    } else {
+    if (!currentTaskID) {
       message.error('暂时还没有作业哦').then(null, null);
+      return;
     }
+    if (group === 'Frontend' && (!formData?.[0] || !isCodePenUrl(formData[0]))) {
+      message.error('请填写正确的 CodePen 链接').then(null, null);
+      return;
+    }
+    post(`/task/submitted`, {
+      assignedTaskID: currentTaskID,
+      urls: formData,
+    })
+      .then(() => {
+        message.success('提交成功').then(null, null);
+      })
+      .catch(() => {
+        message.error(`提交失败`).then(null, null);
+      });
   };
 
   const handleChangeUpload = (e: UploadProps['fileList']) => {
@@ -63,12 +70,24 @@ const SubmitCompMobile: React.FC<SubmitBeforeJudgeMobileProps> = (props) => {
         </div>
         <div className="user-mobile-submit">
           <div className="user-mobile-drop">
-            {'作业附件 :'}
-            <Uploader
-              mobile
-              onChange={debounce(handleChangeUpload, 400)}
-              defaultList={uploadHistory}
-            ></Uploader>
+            {group === 'Frontend' ? (
+              <>
+                {'CodePen 链接 :'}
+                <CodePenInput
+                  defaultValue={uploadHistory?.[0] || ''}
+                  onChange={(url) => setFormData(url ? [url] : [''])}
+                />
+              </>
+            ) : (
+              <>
+                {'作业附件 :'}
+                <Uploader
+                  mobile
+                  onChange={debounce(handleChangeUpload, 400)}
+                  defaultList={uploadHistory}
+                ></Uploader>
+              </>
+            )}
           </div>
         </div>
       </div>

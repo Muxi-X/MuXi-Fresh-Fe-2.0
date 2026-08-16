@@ -95,6 +95,7 @@ const HomeworkUserSubmitMobile: React.FC = () => {
               currentTaskID={currentTaskID}
               currentTaskInfo={currentTaskInfo}
               uploadHistory={uploadHistory}
+              group={selected?.value}
             />
           )}
         </PageWrapMobile>

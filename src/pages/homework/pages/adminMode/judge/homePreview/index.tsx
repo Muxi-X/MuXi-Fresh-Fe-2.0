@@ -92,7 +92,7 @@ const HomePreview: React.FC<HomePreviewProps> = (props) => {
             </Card>
           </TagList>
           <TagList tag_name="作业概述">
-            <div className="description-card" style={{ height: '30vh' }}>
+            <div className="description-card" style={{ maxHeight: '15vh' }}>
               {Preview.content.replace(/\n/gi, `\r\n`)}
             </div>
           </TagList>
