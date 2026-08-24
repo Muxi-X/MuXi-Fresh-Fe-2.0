@@ -10,8 +10,19 @@ import type { FilterValue, SorterResult } from 'antd/es/table/interface';
 type ReviewTableProps = {
   reviewList: ReviewRow[];
   loading: boolean;
+  total: number;
+  current: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
 };
-const ReviewTable: React.FC<ReviewTableProps> = ({ reviewList, loading }) => {
+const ReviewTable: React.FC<ReviewTableProps> = ({
+  reviewList,
+  loading,
+  total,
+  current,
+  pageSize,
+  onPageChange,
+}) => {
   const [reviewTable, setReviewTable] = useState(reviewList);
   const [searchText, setSearchText] = useState('');
   const [filteredData, setFilteredData] = useState(reviewList);
@@ -153,24 +164,21 @@ const ReviewTable: React.FC<ReviewTableProps> = ({ reviewList, loading }) => {
     );
   }, [reviewTable]);
 
-  // 切换组别时清空筛选和排序和页数
+  // 切换组别时清空筛选和排序
   const [filter, setFilter] = useState<Record<string, FilterValue | null>>({});
   const [sorted, setSorted] = useState<SorterResult<ReviewRow>>({});
-  const [currentPage, setCurrentPage] = useState(1);
   const handleChange: TableProps<ReviewRow>['onChange'] = (
     pagination,
     filters,
     sorter,
   ) => {
-    console.log(filters);
     setFilter(filters);
     setSorted(sorter as SorterResult<ReviewRow>);
-    setCurrentPage(pagination.current as number);
+    onPageChange(pagination.current as number);
   };
   useEffect(() => {
     setFilter({});
     setSorted({});
-    setCurrentPage(1);
   }, [reviewList]);
 
   const columns: ColumnsType<ReviewRow> = [
@@ -333,9 +341,10 @@ const ReviewTable: React.FC<ReviewTableProps> = ({ reviewList, loading }) => {
         onChange={handleChange}
         pagination={{
           position: ['bottomCenter'],
-          pageSize: 10,
+          pageSize: pageSize,
           showSizeChanger: false,
-          current: currentPage,
+          current: current,
+          total: total,
         }}
         rowKey={(r) => r.schedule_id}
       />

@@ -62,7 +62,8 @@ const PersonalPage: React.FC = () => {
     void get('/users/my-info', true).then(
       (r: GetUserInfoResult) => {
         const { data } = r;
-        setUserInfo(data);
+        if (data) setUserInfo(data);
+        else void message.error('获取个人信息失败，请重试');
       },
       (e) => {
         console.error(e);

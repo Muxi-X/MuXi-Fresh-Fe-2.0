@@ -5,7 +5,7 @@ import Selector from '../../../components/selector';
 import SemesterSelector, { SemesterValue } from '../../../components/semesterSelector';
 import { defData } from '../../../utils/deData';
 import { dataType, titleListType } from '../../../types';
-import { get } from '../../../../../fetch.ts';
+import { getSelectedTaskList } from '../../../utils/taskApi';
 import { Collapse, CollapseProps, message } from 'antd';
 import { getCurrentSeason } from '../../../../../utils/GetYearSeason/getReviewYear.ts';
 
@@ -16,9 +16,7 @@ const HomeworkBrowse: React.FC = () => {
   const [semester, setSemester] = useState<string>(getCurrentSeason());
 
   const fetchTaskList = (g: dataType, y: number, s: string) => {
-    void get(
-      `/task/assigned/list/selected?group=${g.value}&year=${y}&semester=${s}`,
-    ).then((res: titleListType) => {
+    void getSelectedTaskList(g.value, y, s).then((res: titleListType) => {
       const Res = res?.titles;
       if (Res && Res.length > 0) {
         const tasks: CollapseProps['items'] = Res.map((itm) => ({

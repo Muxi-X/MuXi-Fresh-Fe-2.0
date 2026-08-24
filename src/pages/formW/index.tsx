@@ -47,6 +47,7 @@ const FormForWeb: React.FC = () => {
     Backend: '后端组',
     Design: '设计组',
     Frontend: '前端组',
+    Operation: '运营组',
     Product: '产品组',
   };
 
@@ -362,6 +363,11 @@ const FormForWeb: React.FC = () => {
       value: 'Backend',
       label: '后端组',
       content: '后端服务、服务器运维、保障木犀产品长治久安',
+    },
+    {
+      value: 'Operation',
+      label: '运营组',
+      content: '负责团队运营、活动策划与新媒体运营，传递木犀声音',
     },
     // { value: 'Android', label: '安卓组' },
   ];

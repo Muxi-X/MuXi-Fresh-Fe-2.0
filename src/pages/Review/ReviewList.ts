@@ -6,11 +6,6 @@ export enum AdmissionStatus {
   '已转正' = '已转正',
 }
 
-export enum ExamStatus {
-  '已提交' = '已提交',
-  '未提交' = '未提交',
-}
-
 export enum Gender {
   'male' = '男',
   'female' = '女',
@@ -18,13 +13,18 @@ export enum Gender {
 
 export interface ReviewRow {
   admission_status: AdmissionStatus;
-  exam_status: ExamStatus;
+  extra_question: string;
   form_id: string;
   grader: string;
   group: Group;
+  major: string;
   name: string;
+  phone: string;
+  reason: string;
   schedule_id: string;
   school: string;
+  selfintro: string;
+  understanding: string;
   user_id: string;
   gender: Gender;
 }

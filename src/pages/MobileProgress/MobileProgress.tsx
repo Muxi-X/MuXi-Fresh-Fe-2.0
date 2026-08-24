@@ -29,6 +29,7 @@ const MobileProgress: React.FC = () => {
     Backend: '后端组',
     Design: '设计组',
     Frontend: '前端组',
+    Operation: '运营组',
     Product: '产品组',
   };
 
