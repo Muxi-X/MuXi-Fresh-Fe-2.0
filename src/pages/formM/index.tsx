@@ -605,6 +605,7 @@ const FormForMobile: React.FC = () => {
             <Select.Option value="Design">设计组</Select.Option>
             <Select.Option value="Frontend">前端组</Select.Option>
             <Select.Option value="Backend">后端组</Select.Option>
+            <Select.Option value="Operation">运营组</Select.Option>
             {/* <Select.Option value="Android">安卓组</Select.Option> */}
           </Select>
         </div>

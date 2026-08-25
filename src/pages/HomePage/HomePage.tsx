@@ -40,7 +40,8 @@ const ShowInfo = ({ changeEditState }: { changeEditState: () => void }) => {
     void get('/users/my-info', true).then(
       (r: GetUserInfoResult) => {
         const { data } = r;
-        setUserInfo(data);
+        if (data) setUserInfo(data);
+        else void message.error('获取个人信息失败，请重试');
         setIsLoading(false);
       },
       (e) => {
@@ -297,7 +298,8 @@ const EditInfo = ({ changeEditState }: { changeEditState: () => void }) => {
     void get('/users/my-info', true).then(
       (r: GetUserInfoResult) => {
         const { data } = r;
-        setUserInfo(data);
+        if (data) setUserInfo(data);
+        else void message.error('获取个人信息失败，请重试');
       },
       (e) => {
         console.error(e);
@@ -497,6 +499,7 @@ const EditInfo = ({ changeEditState }: { changeEditState: () => void }) => {
               { value: 'Design', label: '设计组' },
               { value: 'Frontend', label: '前端组' },
               { value: 'Backend', label: '后端组' },
+              { value: 'Operation', label: '运营组' },
             ]}
             onChange={changeGroup}
           />
@@ -609,7 +612,8 @@ const HomePage: React.FC = () => {
     void get('/users/my-info', true).then(
       (r: GetUserInfoResult) => {
         const { data } = r;
-        setUserInfo(data);
+        if (data) setUserInfo(data);
+        else void message.error('获取个人信息失败，请重试');
       },
       (e) => {
         console.error(e);

@@ -12,6 +12,7 @@ export enum Group {
   Backend = 'Backend',
   Design = 'Design',
   Frontend = 'Frontend',
+  Operation = 'Operation',
   Product = 'Product',
 }
 

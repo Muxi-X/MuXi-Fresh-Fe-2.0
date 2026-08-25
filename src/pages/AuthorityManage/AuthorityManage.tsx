@@ -2,7 +2,7 @@ import './AuthorityManage.less';
 import { message } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { get, post } from '../../fetch.ts';
-import { AdminList, AdminRow, ChangeUserType } from './AdminList.ts';
+import { AdminList, AdminRow } from './AdminList.ts';
 import AdminLists from './components/AdminLists/AdminLists.tsx';
 import { useNavigate } from 'react-router-dom';
 
@@ -52,16 +52,16 @@ const AuthorityManage = () => {
       email: email,
       user_type: user_type,
     }).then(
-      (r: ChangeUserType) => {
-        if (r.code == -1) {
-          void message.error(`请检查邮箱是否正确`);
-        } else {
-          void message.success(`设置${user_type_cn}成功`);
-          setIsChange(!isChange);
-        }
+      () => {
+        void message.success(`设置${user_type_cn}成功`);
+        setIsChange(!isChange);
       },
-      (e) => {
-        void message.error(`设置${user_type_cn}失败，请稍后重试`);
+      (e: Error) => {
+        if (Number(e.message) === -1) {
+          void message.error('请检查邮箱是否正确');
+        } else {
+          void message.error(`设置${user_type_cn}失败，请稍后重试`);
+        }
         console.error(e);
       },
     );

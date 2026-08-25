@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import UploadSection from '../../../components/uploadWrap';
 import { debounce } from '../../../../../utils/Debounce/debounce.ts';
 import { get, post } from '../../../../../fetch.ts';
+import { getSelectedTaskList } from '../../../utils/taskApi';
 import {
   backType,
   cmtType,
@@ -22,7 +23,6 @@ import CodePenInput from '../../../components/codepen';
 import { isCodePenUrl } from '../../../utils/codepen';
 import './index.less';
 import HomeComment from '../../adminMode/judge/comment';
-import { getCurrentSeason } from '../../../../../utils/GetYearSeason/getReviewYear.ts';
 
 const HomeworkUserSubmit: React.FC = () => {
   const [version, setVersion] = useState(0);
@@ -62,11 +62,7 @@ const HomeworkUserSubmit: React.FC = () => {
       defData.forEach((item) => {
         if (groupRes.includes(item.value)) {
           setGroup(item);
-          get(
-            `/task/assigned/list/selected?group=${
-              item.value
-            }&year=${new Date().getFullYear()}&semester=${getCurrentSeason()}`,
-          ).then((res: titleListType) => {
+          getSelectedTaskList(item.value).then((res: titleListType) => {
             console.log(res);
             setLoading(false);
             if (res) {

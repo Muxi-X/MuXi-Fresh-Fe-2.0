@@ -22,7 +22,7 @@ const ReviewYear: React.FC<ReviewYearProps> = ({ changeYear }) => {
     <div className="reviewYear">
       {years && (
         <Select
-          defaultValue={years[0].label}
+          defaultValue={years[0].value}
           style={{ width: '80%' }}
           onSelect={(value: string) => {
             handleChange(value as YearSeason);

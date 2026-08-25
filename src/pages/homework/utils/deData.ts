@@ -17,6 +17,10 @@ export const defData: dataType[] = [
     key: '后端组',
     value: 'Backend',
   },
+  {
+    key: '运营组',
+    value: 'Operation',
+  },
   // {
   //   key: '安卓组',
   //   value: 'Android',

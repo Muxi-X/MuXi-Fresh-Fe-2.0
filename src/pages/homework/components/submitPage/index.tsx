@@ -2,9 +2,8 @@ import React, { CSSProperties, useEffect, useState } from 'react';
 import './index.less';
 import Selector from '../selector';
 import UploadSection from '../uploadWrap';
-import { get, post } from '../../../../fetch.ts';
+import { post } from '../../../../fetch.ts';
 import {
-  backType,
   choiceType,
   dataType,
   TaskInfoType,
@@ -14,7 +13,7 @@ import {
 import { message } from 'antd';
 import { defData } from '../../utils/deData';
 import { useNavigate } from 'react-router-dom';
-import { getCurrentSeason } from '../../../../utils/GetYearSeason/getReviewYear.ts';
+import { getSelectedTaskList } from '../../utils/taskApi';
 
 interface HomeworkSubmitProps {
   title?: string;
@@ -55,11 +54,7 @@ const HomeworkSubmit: React.FC<HomeworkSubmitProps> = (props) => {
   };
 
   const UpdateTaskList = (item: dataType) => {
-    get(
-      `/task/assigned/list/selected?group=${
-        item.value
-      }&year=${new Date().getFullYear()}&semester=${getCurrentSeason()}`,
-    ).then((res: titleListType) => {
+    getSelectedTaskList(item.value).then((res: titleListType) => {
       console.log(res);
       setLoading(false);
       if (res?.titles) {
