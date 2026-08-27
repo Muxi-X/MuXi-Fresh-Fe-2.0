@@ -6,7 +6,7 @@ import { SendEmailResult, SignUpResult } from './SignUp';
 import { useNavigate } from 'react-router-dom';
 
 const EMAIL_REGEX =
-  /^[\w!#$%&'*+/=?^_`{|}~-]+(?:\.[\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\w](?:[\w-]*[\w])?\.)+[\w](?:[\w-]*[\w])?$/;
+  /^[\w!#$%&'*+/=?^_`{|}~-]+(?:\.[\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\w](?:[\w-]*[\w])?\.)+[A-Za-z]{2,}$/;
 
 const SignUp: React.FC = () => {
   const [email, setEmail] = useState('');
