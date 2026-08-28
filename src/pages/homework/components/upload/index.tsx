@@ -11,6 +11,7 @@ import { FileLinkPure } from '../files';
 import Submit from '../button';
 import './index.less';
 import { root } from '../../utils/deData';
+import { buildUploadKey } from '../../../../utils/jwt.ts';
 
 const { Dragger } = Upload;
 interface UploaderProps {
@@ -77,17 +78,12 @@ const Uploader: React.FC<UploaderProps> = (props) => {
     }
   };
   const customRequest = (options: any) => {
+    const key = buildUploadKey(options.file.name as string);
     const putExtra = {
       fname: `${Date.now()}--${options.file.name as string}`,
     };
     const config = {};
-    const observable = qiniu.upload(
-      options.file as File,
-      `${Date.now()}--${options.file.name as string}`,
-      qntoken,
-      putExtra,
-      config,
-    );
+    const observable = qiniu.upload(options.file as File, key, qntoken, putExtra, config);
     // 监听上传
     const subscription: any = observable.subscribe({
       next: (res) => {

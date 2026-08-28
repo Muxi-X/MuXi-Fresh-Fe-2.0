@@ -11,6 +11,7 @@ import {
   UserInfo,
 } from './UserInfo';
 import { get, post } from '../../fetch';
+import { buildUploadKey } from '../../utils/jwt';
 import schoolData from './SchoolData';
 import * as qiniu from 'qiniu-js';
 import { SendEmailResult } from '../SignUp/SignUp';
@@ -680,7 +681,10 @@ const HomePage: React.FC = () => {
           <ImgCrop>
             <Upload<ResponseType>
               action={uploadUrl}
-              data={{ token: qiniuToken }}
+              data={(file) => ({
+                token: qiniuToken,
+                key: buildUploadKey(file.name),
+              })}
               fileList={fileList}
               onChange={onChange}
               showUploadList={false}
@@ -694,7 +698,10 @@ const HomePage: React.FC = () => {
           <ImgCrop>
             <Upload<ResponseType>
               action={uploadUrl}
-              data={{ token: qiniuToken }}
+              data={(file) => ({
+                token: qiniuToken,
+                key: buildUploadKey(file.name),
+              })}
               fileList={fileList}
               onChange={onChange}
               showUploadList={false}

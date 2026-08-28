@@ -4,6 +4,7 @@ import { Input, message, Modal, Upload, UploadFile, UploadProps } from 'antd';
 import ImgCrop from 'antd-img-crop';
 import * as qiniu from 'qiniu-js';
 import { get, post, postPwd } from '../../fetch';
+import { buildUploadKey } from '../../utils/jwt';
 import {
   ChangeEmailResult,
   ChangeUserInfoResult,
@@ -288,7 +289,10 @@ const PersonalPage: React.FC = () => {
         <ImgCrop>
           <Upload<ResponseType>
             action={uploadUrl}
-            data={{ token: qiniuToken }}
+            data={(file) => ({
+              token: qiniuToken,
+              key: buildUploadKey(file.name),
+            })}
             fileList={fileList}
             onChange={onChange}
             showUploadList={false}
