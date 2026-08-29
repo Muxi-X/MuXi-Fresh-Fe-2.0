@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { get, put, post } from '../../fetch';
+import { buildUploadKey } from '../../utils/jwt';
 import './index.less';
 import { ConfigProvider, message, Radio, Tooltip, Upload } from 'antd';
 import ImgCrop from 'antd-img-crop';
@@ -395,7 +396,10 @@ const FormForWeb: React.FC = () => {
               <ImgCrop>
                 <Upload<ResponseType>
                   action={uploadUrl}
-                  data={{ token: qiniuToken }}
+                  data={(file) => ({
+                    token: qiniuToken,
+                    key: buildUploadKey(file.name),
+                  })}
                   fileList={fileList}
                   onChange={onChange}
                   showUploadList={false}
