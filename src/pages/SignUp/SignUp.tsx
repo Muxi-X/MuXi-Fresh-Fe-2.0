@@ -5,6 +5,9 @@ import { get, post } from '../../fetch';
 import { SendEmailResult, SignUpResult } from './SignUp';
 import { useNavigate } from 'react-router-dom';
 
+const EMAIL_REGEX =
+  /^[\w!#$%&'*+/=?^_`{|}~-]+(?:\.[\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\w](?:[\w-]*[\w])?\.)+[A-Za-z]{2,}$/;
+
 const SignUp: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,6 +37,16 @@ const SignUp: React.FC = () => {
   }, [countdown, isSend]);
 
   const sendVerificationCode = () => {
+    if (!email) {
+      void message.error('请输入邮箱');
+      return;
+    }
+
+    if (!EMAIL_REGEX.test(email)) {
+      void message.error('请输入正确的邮箱地址');
+      return;
+    }
+
     const req = {
       email: email,
       type: 'register',
@@ -57,9 +70,7 @@ const SignUp: React.FC = () => {
   };
 
   const checkEmail = () => {
-    const isEmail =
-      /^[\w!#$%&'*+/=?^_`{|}~-]+(?:\.[\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\w](?:[\w-]*[\w])?\.)+[\w](?:[\w-]*[\w])?$/;
-    setIsEmail(isEmail.test(email));
+    setIsEmail(EMAIL_REGEX.test(email));
   };
 
   const checkPasswordFormat = () => {
