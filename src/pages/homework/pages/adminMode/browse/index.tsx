@@ -32,7 +32,7 @@ const HomeworkBrowse: React.FC = () => {
             key: '',
             label: '暂无作业😵',
             children: (
-              <div style={{ height: '40vh' }}>
+              <div className="empty-wrap">
                 <Empty />
               </div>
             ),
