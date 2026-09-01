@@ -72,7 +72,6 @@ const UploadSection: React.FC<UploadSectionProps> = (props) => {
   const [formContent, setFormContent] = useState<string>();
   const statusList: string[] = ['未提交', '已提交', '已批阅', '逾期未交'];
   const [deadline, setDeadline] = useState<Dayjs>(dayjs(new Date()));
-  console.log(deadline.isSame(dayjs(new Date()), 'day'));
 
   const handleChangeTitle = (e: taskListType) => {
     if (choice.includes('edit')) {
@@ -141,9 +140,8 @@ const UploadSection: React.FC<UploadSectionProps> = (props) => {
     onSubmit && onSubmit(query);
   };
 
-  const handleChangeDate = (date: Dayjs) => {
-    setDeadline(date);
-    console.log(date.format('YYYY-MM-DD HH:mm:ss'));
+  const handleChangeDate = (date: Dayjs | null) => {
+    setDeadline(date ?? dayjs(new Date()));
   };
 
   const isDeadlinePassed = (deadline: string): boolean => {
