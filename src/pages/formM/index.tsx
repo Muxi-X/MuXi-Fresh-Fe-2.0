@@ -131,11 +131,18 @@ const FormForMobile: React.FC = () => {
         extra_question: extra_question,
       })
         .then((data: res) => {
-          if (data.code === 200) void message.success('提交成功^_^');
-          else void message.error('提交失败');
+          if (data.code === 200) {
+            void message.success('提交成功^_^');
+            setTimeout(() => {
+              navigate('/app');
+            }, 1000);
+          } else {
+            void message.error('提交失败');
+          }
         })
         .catch((e) => {
           console.error(e);
+          void message.error('提交失败，请重试');
         });
       post('/users/', {
         avatar: avatar2,
@@ -158,9 +165,6 @@ const FormForMobile: React.FC = () => {
       }
     }
     send();
-    setTimeout(() => {
-      navigate('/app');
-    }, 1000);
   };
   const changeForm = () => {
     const arr = [
@@ -202,11 +206,18 @@ const FormForMobile: React.FC = () => {
         extra_question: extra_question,
       })
         .then((data: res) => {
-          if (data.code === 200) void message.success('提交成功^_^');
-          else void message.error('提交失败');
+          if (data.code === 200) {
+            void message.success('提交成功^_^');
+            setTimeout(() => {
+              navigate('/app');
+            }, 1000);
+          } else {
+            void message.error('提交失败');
+          }
         })
         .catch((e) => {
           console.error(e);
+          void message.error('提交失败，请重试');
         });
       post('/users/', {
         avatar: avatar2,
@@ -229,9 +240,6 @@ const FormForMobile: React.FC = () => {
       }
     }
     send();
-    setTimeout(() => {
-      navigate('/app');
-    }, 1000);
   };
   useEffect(() => {
     if (contactWayselect1 == 'email') void message.info('邮箱请在个人主页修改');
@@ -306,10 +314,19 @@ const FormForMobile: React.FC = () => {
 
   const onChange: UploadProps<ResponseType>['onChange'] = ({ fileList: newFileList }) => {
     setFileList(newFileList);
-    const response = newFileList[0].response;
+    const file = newFileList[0];
+    const response = file?.response;
+
     if (response) {
-      const avatar = `https://ossfresh-test.muxixyz.com/${response.key}`;
+      const key = response.key;
+      if (typeof key !== 'string' || key === '') {
+        void message.error('头像上传失败，请重试');
+        return;
+      }
+      const avatar = `https://ossfresh-test.muxixyz.com/${key}`;
       setavatar(avatar);
+    } else if (file?.status === 'done' || file?.status === 'error') {
+      void message.error('头像上传失败，请重试');
     }
   };
 

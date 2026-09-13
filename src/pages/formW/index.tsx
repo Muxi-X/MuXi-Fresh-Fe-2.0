@@ -146,6 +146,7 @@ const FormForWeb: React.FC = () => {
         })
         .catch((e) => {
           console.error(e);
+          void message.error('提交失败，请重试');
         });
       post('/users/', {
         avatar: avatar2,
@@ -218,6 +219,7 @@ const FormForWeb: React.FC = () => {
         })
         .catch((e) => {
           console.error(e);
+          void message.error('修改失败，请重试');
         });
       post('/users/', {
         avatar: avatar2,
@@ -312,11 +314,19 @@ const FormForWeb: React.FC = () => {
 
   const onChange: UploadProps<ResponseType>['onChange'] = ({ fileList: newFileList }) => {
     setFileList(newFileList);
-    const response = newFileList[0].response;
+    const file = newFileList[0];
+    const response = file?.response;
 
     if (response) {
-      const avatar = `https://ossfresh-test.muxixyz.com/${response.key}`;
+      const key = response.key;
+      if (typeof key !== 'string' || key === '') {
+        void message.error('头像上传失败，请重试');
+        return;
+      }
+      const avatar = `https://ossfresh-test.muxixyz.com/${key}`;
       setavatar(avatar);
+    } else if (file?.status === 'done' || file?.status === 'error') {
+      void message.error('头像上传失败，请重试');
     }
   };
   useEffect(() => {

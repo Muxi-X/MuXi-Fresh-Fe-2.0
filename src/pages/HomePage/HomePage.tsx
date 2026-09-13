@@ -644,11 +644,16 @@ const HomePage: React.FC = () => {
 
   const onChange: UploadProps<ResponseType>['onChange'] = ({ fileList: newFileList }) => {
     setFileList(newFileList);
-    const response = newFileList[0].response;
-    console.log('response', response?.key);
+    const file = newFileList[0];
+    const response = file?.response;
 
     if (response) {
-      const avatar = `https://ossfresh-test.muxixyz.com/${response.key}`;
+      const key = response.key;
+      if (typeof key !== 'string' || key === '') {
+        void message.error('更换头像失败，请重试！');
+        return;
+      }
+      const avatar = `https://ossfresh-test.muxixyz.com/${key}`;
       const req = {
         avatar: avatar,
         name: userInfo.name,
@@ -670,6 +675,8 @@ const HomePage: React.FC = () => {
           void message.error('更换头像失败，请重试！');
         },
       );
+    } else if (file?.status === 'done' || file?.status === 'error') {
+      void message.error('更换头像失败，请重试！');
     }
   };
 
