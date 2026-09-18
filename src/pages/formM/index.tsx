@@ -13,8 +13,6 @@ import { grader } from '../../utils/grader/grader.ts';
 
 const FormForMobile: React.FC = () => {
   const navigate = useNavigate();
-  const [qiniuToken, setQiniuToken] = useState('');
-  const [uploadUrl, setUploadUrl] = useState('');
   const [pageNum, setPageNum] = useState(0); //页数
   const [name, setName] = useState(''); //姓名
   const [nickname, setnickname] = useState('');
@@ -292,17 +290,6 @@ const FormForMobile: React.FC = () => {
       .catch((e) => {
         console.error(e);
       });
-    void get('/auth/get-qntoken', true).then((r: GetQiniuTokenResult) => {
-      const { QiniuToken } = r.data;
-      setQiniuToken(QiniuToken);
-      const config = {
-        useCdnDomain: true,
-        region: qiniu.region.z2,
-      };
-      void qiniu.getUploadUrl(config, QiniuToken).then((r) => {
-        setUploadUrl(r);
-      });
-    });
   }, []);
 
   interface ResponseType {
@@ -328,6 +315,37 @@ const FormForMobile: React.FC = () => {
     } else if (file?.status === 'done' || file?.status === 'error') {
       void message.error('头像上传失败，请重试');
     }
+  };
+
+  const customRequest: UploadProps<ResponseType>['customRequest'] = (options) => {
+    get('/auth/get-qntoken', true)
+      .then((r: GetQiniuTokenResult) => {
+        const { QiniuToken } = r.data;
+        const file = options.file as File;
+        const key = buildUploadKey(file.name);
+        const putExtra = { fname: `${Date.now()}--${file.name}` };
+        const config = {
+          useCdnDomain: true,
+          region: qiniu.region.z2,
+        };
+        const observable = qiniu.upload(file, key, QiniuToken, putExtra, config);
+        const subscription = observable.subscribe({
+          next: (res) => {
+            options.onProgress?.({ percent: res.total.percent });
+          },
+          error: (err) => {
+            options.onError?.(err);
+            subscription.unsubscribe();
+          },
+          complete: (res) => {
+            options.onSuccess?.(res as ResponseType);
+            subscription.unsubscribe();
+          },
+        });
+      })
+      .catch((e: unknown) => {
+        options.onError?.(e as Error);
+      });
   };
 
   const [isPastDeadline, setIsPastDeadline] = useState(false);
@@ -360,11 +378,7 @@ const FormForMobile: React.FC = () => {
       <div className="mainbox_formM firstbox_formM">
         <ImgCrop>
           <Upload<ResponseType>
-            action={uploadUrl}
-            data={(file) => ({
-              token: qiniuToken,
-              key: buildUploadKey(file.name),
-            })}
+            customRequest={customRequest}
             fileList={fileList}
             onChange={onChange}
             showUploadList={false}
