@@ -2,13 +2,11 @@ import React, { useEffect, useState } from 'react';
 import './PersonalPage.less';
 import { Input, message, Modal, Upload, UploadFile, UploadProps } from 'antd';
 import ImgCrop from 'antd-img-crop';
-import * as qiniu from 'qiniu-js';
 import { get, post, postPwd } from '../../fetch';
-import { buildUploadKey } from '../../utils/jwt';
+import { qiniuCustomRequest, QiniuUploadResponse } from '../../utils/qiniuUpload';
 import {
   ChangeEmailResult,
   ChangeUserInfoResult,
-  GetQiniuTokenResult,
   GetUserInfoResult,
   UserInfo,
 } from '../HomePage/UserInfo';
@@ -70,14 +68,11 @@ const PersonalPage: React.FC = () => {
     );
   }, []);
 
-  interface ResponseType {
-    key: string;
-    hash: string;
-  }
-
   const [fileList, setFileList] = useState<UploadFile[]>([]);
 
-  const onChange: UploadProps<ResponseType>['onChange'] = ({ fileList: newFileList }) => {
+  const onChange: UploadProps<QiniuUploadResponse>['onChange'] = ({
+    fileList: newFileList,
+  }) => {
     setFileList(newFileList);
     const file = newFileList[0];
     const response = file?.response;
@@ -113,37 +108,6 @@ const PersonalPage: React.FC = () => {
     } else if (file?.status === 'done' || file?.status === 'error') {
       void message.error('更换头像失败，请重试！');
     }
-  };
-
-  const customRequest: UploadProps<ResponseType>['customRequest'] = (options) => {
-    get('/auth/get-qntoken', true)
-      .then((r: GetQiniuTokenResult) => {
-        const { QiniuToken } = r.data;
-        const file = options.file as File;
-        const key = buildUploadKey(file.name);
-        const putExtra = { fname: `${Date.now()}--${file.name}` };
-        const config = {
-          useCdnDomain: true,
-          region: qiniu.region.z2,
-        };
-        const observable = qiniu.upload(file, key, QiniuToken, putExtra, config);
-        const subscription = observable.subscribe({
-          next: (res) => {
-            options.onProgress?.({ percent: res.total.percent });
-          },
-          error: (err) => {
-            options.onError?.(err);
-            subscription.unsubscribe();
-          },
-          complete: (res) => {
-            options.onSuccess?.(res as ResponseType);
-            subscription.unsubscribe();
-          },
-        });
-      })
-      .catch((e: unknown) => {
-        options.onError?.(e as Error);
-      });
   };
 
   const showStudentIdModal = () => {
@@ -313,8 +277,8 @@ const PersonalPage: React.FC = () => {
           <div className="title-box">个人主页</div>
         </div>
         <ImgCrop>
-          <Upload<ResponseType>
-            customRequest={customRequest}
+          <Upload<QiniuUploadResponse>
+            customRequest={qiniuCustomRequest}
             fileList={fileList}
             onChange={onChange}
             showUploadList={false}

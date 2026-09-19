@@ -1,11 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { get, put, post } from '../../fetch';
-import { buildUploadKey } from '../../utils/jwt';
+import { qiniuCustomRequest, QiniuUploadResponse } from '../../utils/qiniuUpload';
 import './index.less';
 import { ConfigProvider, message, Radio, Tooltip, Upload } from 'antd';
 import ImgCrop from 'antd-img-crop';
 import type { UploadFile, UploadProps } from 'antd/es/upload/interface';
-import * as qiniu from 'qiniu-js';
 import { Watermark, Input, Select, Space } from 'antd';
 import TextArea from 'antd/es/input/TextArea';
 import { useParams } from 'react-router-dom';
@@ -78,14 +77,6 @@ const FormForWeb: React.FC = () => {
       qq: string;
       school: string;
       student_id: string;
-    };
-  }
-
-  interface GetQiniuTokenResult {
-    code: number;
-    msg: 'OK';
-    data: {
-      QiniuToken: string;
     };
   }
 
@@ -292,14 +283,11 @@ const FormForWeb: React.FC = () => {
       });
   }, [form_id, user_id]);
 
-  interface ResponseType {
-    key: string;
-    hash: string;
-  }
-
   const [fileList, setFileList] = useState<UploadFile[]>([]);
 
-  const onChange: UploadProps<ResponseType>['onChange'] = ({ fileList: newFileList }) => {
+  const onChange: UploadProps<QiniuUploadResponse>['onChange'] = ({
+    fileList: newFileList,
+  }) => {
     setFileList(newFileList);
     const file = newFileList[0];
     const response = file?.response;
@@ -315,37 +303,6 @@ const FormForWeb: React.FC = () => {
     } else if (file?.status === 'done' || file?.status === 'error') {
       void message.error('头像上传失败，请重试');
     }
-  };
-
-  const customRequest: UploadProps<ResponseType>['customRequest'] = (options) => {
-    get('/auth/get-qntoken', true)
-      .then((r: GetQiniuTokenResult) => {
-        const { QiniuToken } = r.data;
-        const file = options.file as File;
-        const key = buildUploadKey(file.name);
-        const putExtra = { fname: `${Date.now()}--${file.name}` };
-        const config = {
-          useCdnDomain: true,
-          region: qiniu.region.z2,
-        };
-        const observable = qiniu.upload(file, key, QiniuToken, putExtra, config);
-        const subscription = observable.subscribe({
-          next: (res) => {
-            options.onProgress?.({ percent: res.total.percent });
-          },
-          error: (err) => {
-            options.onError?.(err);
-            subscription.unsubscribe();
-          },
-          complete: (res) => {
-            options.onSuccess?.(res as ResponseType);
-            subscription.unsubscribe();
-          },
-        });
-      })
-      .catch((e: unknown) => {
-        options.onError?.(e as Error);
-      });
   };
   useEffect(() => {
     if (contactWayselect1 == 'email' && !user_id)
@@ -422,8 +379,8 @@ const FormForWeb: React.FC = () => {
             <div className="title_formweb">个人信息</div>
             <div className="personInformationbox">
               <ImgCrop>
-                <Upload<ResponseType>
-                  customRequest={customRequest}
+                <Upload<QiniuUploadResponse>
+                  customRequest={qiniuCustomRequest}
                   fileList={fileList}
                   onChange={onChange}
                   showUploadList={false}

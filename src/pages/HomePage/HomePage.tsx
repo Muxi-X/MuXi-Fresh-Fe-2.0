@@ -6,14 +6,12 @@ import './Homepage.less';
 import {
   ChangeEmailResult,
   ChangeUserInfoResult,
-  GetQiniuTokenResult,
   GetUserInfoResult,
   UserInfo,
 } from './UserInfo';
 import { get, post } from '../../fetch';
-import { buildUploadKey } from '../../utils/jwt';
+import { qiniuCustomRequest, QiniuUploadResponse } from '../../utils/qiniuUpload';
 import schoolData from './SchoolData';
-import * as qiniu from 'qiniu-js';
 import { SendEmailResult } from '../SignUp/SignUp';
 
 const ShowInfo = ({ changeEditState }: { changeEditState: () => void }) => {
@@ -621,14 +619,11 @@ const HomePage: React.FC = () => {
     );
   }, []);
 
-  interface ResponseType {
-    key: string;
-    hash: string;
-  }
-
   const [fileList, setFileList] = useState<UploadFile[]>([]);
 
-  const onChange: UploadProps<ResponseType>['onChange'] = ({ fileList: newFileList }) => {
+  const onChange: UploadProps<QiniuUploadResponse>['onChange'] = ({
+    fileList: newFileList,
+  }) => {
     setFileList(newFileList);
     const file = newFileList[0];
     const response = file?.response;
@@ -666,37 +661,6 @@ const HomePage: React.FC = () => {
     }
   };
 
-  const customRequest: UploadProps<ResponseType>['customRequest'] = (options) => {
-    get('/auth/get-qntoken', true)
-      .then((r: GetQiniuTokenResult) => {
-        const { QiniuToken } = r.data;
-        const file = options.file as File;
-        const key = buildUploadKey(file.name);
-        const putExtra = { fname: `${Date.now()}--${file.name}` };
-        const config = {
-          useCdnDomain: true,
-          region: qiniu.region.z2,
-        };
-        const observable = qiniu.upload(file, key, QiniuToken, putExtra, config);
-        const subscription = observable.subscribe({
-          next: (res) => {
-            options.onProgress?.({ percent: res.total.percent });
-          },
-          error: (err) => {
-            options.onError?.(err);
-            subscription.unsubscribe();
-          },
-          complete: (res) => {
-            options.onSuccess?.(res as ResponseType);
-            subscription.unsubscribe();
-          },
-        });
-      })
-      .catch((e: unknown) => {
-        options.onError?.(e as Error);
-      });
-  };
-
   const changeEditState = () => {
     setIsEdit((isEdit) => !isEdit);
   };
@@ -707,8 +671,8 @@ const HomePage: React.FC = () => {
       <div className="person-info-box">
         <div className="avatar-box">
           <ImgCrop>
-            <Upload<ResponseType>
-              customRequest={customRequest}
+            <Upload<QiniuUploadResponse>
+              customRequest={qiniuCustomRequest}
               fileList={fileList}
               onChange={onChange}
               showUploadList={false}
@@ -720,8 +684,8 @@ const HomePage: React.FC = () => {
             </Upload>
           </ImgCrop>
           <ImgCrop>
-            <Upload<ResponseType>
-              customRequest={customRequest}
+            <Upload<QiniuUploadResponse>
+              customRequest={qiniuCustomRequest}
               fileList={fileList}
               onChange={onChange}
               showUploadList={false}
