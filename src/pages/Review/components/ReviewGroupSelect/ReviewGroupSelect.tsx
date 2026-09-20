@@ -64,7 +64,7 @@ const ReviewGroupSelect: React.FC<ReviewGroupSelectProps> = ({
             title: chineseGroups[group],
             label: <div className={'reviewGroups'}>{chineseGroups[group]}</div>,
           }))}
-          style={{ height: '400px' }}
+          style={{ height: 'auto' }}
         />
       </ConfigProvider>
     </div>

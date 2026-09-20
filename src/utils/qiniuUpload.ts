@@ -27,7 +27,7 @@ type QiniuCustomRequest = UploadProps<QiniuUploadResponse>['customRequest'];
  * 杜绝 state 异步导致上传时复用旧 token。
  */
 export const qiniuCustomRequest: QiniuCustomRequest = (options) => {
-  get('/auth/get-qntoken', true)
+  get(`/auth/get-qntoken?_=${Date.now()}`, true)
     .then((r: GetQiniuTokenResult) => {
       const { QiniuToken } = r.data;
       const file = options.file as File;
