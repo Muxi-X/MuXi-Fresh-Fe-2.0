@@ -39,7 +39,7 @@ const ChangeUserTypeBox: React.FC<ChangeUserTypeBoxProps> = ({
       />
       <Popconfirm
         title={`添加${header}`}
-        description={`确定将这个人设置为${header}吗？`}
+        description={`确定将 ${email} 设置为${header}吗？`}
         open={open}
         onOpenChange={handleOpenChange}
         onConfirm={() => {

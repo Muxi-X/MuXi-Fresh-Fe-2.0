@@ -1,6 +1,7 @@
 export interface ReviewFilter {
   grade: string;
   group: Group;
+  name: string;
   school: string;
   season: Season;
   status: string;
@@ -8,6 +9,7 @@ export interface ReviewFilter {
 }
 
 export enum Group {
+  All = 'All',
   // Android = 'Android',
   Backend = 'Backend',
   Design = 'Design',

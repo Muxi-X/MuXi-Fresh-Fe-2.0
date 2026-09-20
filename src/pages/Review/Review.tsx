@@ -15,7 +15,8 @@ const PAGE_SIZE = 20;
 const Review = () => {
   const [reviewFilter, setReviewFilter] = useState<ReviewFilter>({
     grade: '',
-    group: Group.Product,
+    group: Group.All,
+    name: '',
     school: '',
     season: getCurrentSeason(),
     status: '',
@@ -44,6 +45,14 @@ const Review = () => {
     setReviewFilter((preReviewFilter) => ({
       ...preReviewFilter,
       group: group,
+    }));
+    setPage(1);
+  };
+
+  const changeName = (name: string) => {
+    setReviewFilter((preReviewFilter) => ({
+      ...preReviewFilter,
+      name,
     }));
     setPage(1);
   };
@@ -117,6 +126,8 @@ const Review = () => {
           total={total}
           current={page}
           pageSize={PAGE_SIZE}
+          searchText={reviewFilter.name}
+          onSearch={changeName}
           onPageChange={setPage}
         />
       </div>
