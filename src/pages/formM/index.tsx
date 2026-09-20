@@ -1,11 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import './index.less';
 import { post, put, get } from '../../fetch';
-import { buildUploadKey } from '../../utils/jwt';
+import { qiniuCustomRequest, QiniuUploadResponse } from '../../utils/qiniuUpload';
 import { message, Upload, Input, Radio, Select } from 'antd';
 import ImgCrop from 'antd-img-crop';
 import type { UploadFile, UploadProps } from 'antd/es/upload/interface';
-import * as qiniu from 'qiniu-js';
 import { useNavigate } from 'react-router-dom';
 import { debounce } from '../../utils/Debounce/debounce.ts';
 import { getYear } from '../../utils/GetYearSeason/getFormYear.ts';
@@ -13,8 +12,6 @@ import { grader } from '../../utils/grader/grader.ts';
 
 const FormForMobile: React.FC = () => {
   const navigate = useNavigate();
-  const [qiniuToken, setQiniuToken] = useState('');
-  const [uploadUrl, setUploadUrl] = useState('');
   const [pageNum, setPageNum] = useState(0); //页数
   const [name, setName] = useState(''); //姓名
   const [nickname, setnickname] = useState('');
@@ -75,14 +72,6 @@ const FormForMobile: React.FC = () => {
       qq: string;
       school: string;
       student_id: string;
-    };
-  }
-
-  interface GetQiniuTokenResult {
-    code: number;
-    msg: 'OK';
-    data: {
-      QiniuToken: string;
     };
   }
 
@@ -292,27 +281,13 @@ const FormForMobile: React.FC = () => {
       .catch((e) => {
         console.error(e);
       });
-    void get('/auth/get-qntoken', true).then((r: GetQiniuTokenResult) => {
-      const { QiniuToken } = r.data;
-      setQiniuToken(QiniuToken);
-      const config = {
-        useCdnDomain: true,
-        region: qiniu.region.z2,
-      };
-      void qiniu.getUploadUrl(config, QiniuToken).then((r) => {
-        setUploadUrl(r);
-      });
-    });
   }, []);
-
-  interface ResponseType {
-    key: string;
-    hash: string;
-  }
 
   const [fileList, setFileList] = useState<UploadFile[]>([]);
 
-  const onChange: UploadProps<ResponseType>['onChange'] = ({ fileList: newFileList }) => {
+  const onChange: UploadProps<QiniuUploadResponse>['onChange'] = ({
+    fileList: newFileList,
+  }) => {
     setFileList(newFileList);
     const file = newFileList[0];
     const response = file?.response;
@@ -359,12 +334,8 @@ const FormForMobile: React.FC = () => {
       <div className="details_formM break_formM">让木犀团队更好地了解你吧</div>
       <div className="mainbox_formM firstbox_formM">
         <ImgCrop>
-          <Upload<ResponseType>
-            action={uploadUrl}
-            data={(file) => ({
-              token: qiniuToken,
-              key: buildUploadKey(file.name),
-            })}
+          <Upload<QiniuUploadResponse>
+            customRequest={qiniuCustomRequest}
             fileList={fileList}
             onChange={onChange}
             showUploadList={false}

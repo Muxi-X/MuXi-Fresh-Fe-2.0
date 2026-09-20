@@ -2,13 +2,11 @@ import React, { useEffect, useState } from 'react';
 import './PersonalPage.less';
 import { Input, message, Modal, Upload, UploadFile, UploadProps } from 'antd';
 import ImgCrop from 'antd-img-crop';
-import * as qiniu from 'qiniu-js';
 import { get, post, postPwd } from '../../fetch';
-import { buildUploadKey } from '../../utils/jwt';
+import { qiniuCustomRequest, QiniuUploadResponse } from '../../utils/qiniuUpload';
 import {
   ChangeEmailResult,
   ChangeUserInfoResult,
-  GetQiniuTokenResult,
   GetUserInfoResult,
   UserInfo,
 } from '../HomePage/UserInfo';
@@ -17,9 +15,6 @@ import { GetAuthSetPasswordResult } from './PersonalPage';
 import { useNavigate } from 'react-router-dom';
 
 const PersonalPage: React.FC = () => {
-  const [qiniuToken, setQiniuToken] = useState('');
-  const [uploadUrl, setUploadUrl] = useState('');
-
   const [userInfo, setUserInfo] = useState<UserInfo>({
     avatar: '',
     name: '',
@@ -71,28 +66,13 @@ const PersonalPage: React.FC = () => {
         void message.error('获取个人信息失败，请重试');
       },
     );
-
-    void get('/auth/get-qntoken', true).then((r: GetQiniuTokenResult) => {
-      const { QiniuToken } = r.data;
-      setQiniuToken(QiniuToken);
-      const config = {
-        useCdnDomain: true,
-        region: qiniu.region.z2,
-      };
-      void qiniu.getUploadUrl(config, QiniuToken).then((r) => {
-        setUploadUrl(r);
-      });
-    });
   }, []);
-
-  interface ResponseType {
-    key: string;
-    hash: string;
-  }
 
   const [fileList, setFileList] = useState<UploadFile[]>([]);
 
-  const onChange: UploadProps<ResponseType>['onChange'] = ({ fileList: newFileList }) => {
+  const onChange: UploadProps<QiniuUploadResponse>['onChange'] = ({
+    fileList: newFileList,
+  }) => {
     setFileList(newFileList);
     const file = newFileList[0];
     const response = file?.response;
@@ -297,12 +277,8 @@ const PersonalPage: React.FC = () => {
           <div className="title-box">个人主页</div>
         </div>
         <ImgCrop>
-          <Upload<ResponseType>
-            action={uploadUrl}
-            data={(file) => ({
-              token: qiniuToken,
-              key: buildUploadKey(file.name),
-            })}
+          <Upload<QiniuUploadResponse>
+            customRequest={qiniuCustomRequest}
             fileList={fileList}
             onChange={onChange}
             showUploadList={false}

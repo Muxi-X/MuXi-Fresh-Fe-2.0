@@ -1,11 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { get, put, post } from '../../fetch';
-import { buildUploadKey } from '../../utils/jwt';
+import { qiniuCustomRequest, QiniuUploadResponse } from '../../utils/qiniuUpload';
 import './index.less';
 import { ConfigProvider, message, Radio, Tooltip, Upload } from 'antd';
 import ImgCrop from 'antd-img-crop';
 import type { UploadFile, UploadProps } from 'antd/es/upload/interface';
-import * as qiniu from 'qiniu-js';
 import { Watermark, Input, Select, Space } from 'antd';
 import TextArea from 'antd/es/input/TextArea';
 import { useParams } from 'react-router-dom';
@@ -16,8 +15,6 @@ import { grader } from '../../utils/grader/grader.ts';
 const FormForWeb: React.FC = () => {
   const { form_id } = useParams();
   const { user_id } = useParams();
-  const [qiniuToken, setQiniuToken] = useState('');
-  const [uploadUrl, setUploadUrl] = useState('');
   const [name, setName] = useState(''); //姓名
   const [sex, setsex] = useState(''); //性别
   const [nickname, setnickname] = useState('');
@@ -80,14 +77,6 @@ const FormForWeb: React.FC = () => {
       qq: string;
       school: string;
       student_id: string;
-    };
-  }
-
-  interface GetQiniuTokenResult {
-    code: number;
-    msg: 'OK';
-    data: {
-      QiniuToken: string;
     };
   }
 
@@ -292,27 +281,13 @@ const FormForWeb: React.FC = () => {
       .catch((e) => {
         console.error(e);
       });
-    void get('/auth/get-qntoken', true).then((r: GetQiniuTokenResult) => {
-      const { QiniuToken } = r.data;
-      setQiniuToken(QiniuToken);
-      const config = {
-        useCdnDomain: true,
-        region: qiniu.region.z2,
-      };
-      void qiniu.getUploadUrl(config, QiniuToken).then((r) => {
-        setUploadUrl(r);
-      });
-    });
   }, [form_id, user_id]);
-
-  interface ResponseType {
-    key: string;
-    hash: string;
-  }
 
   const [fileList, setFileList] = useState<UploadFile[]>([]);
 
-  const onChange: UploadProps<ResponseType>['onChange'] = ({ fileList: newFileList }) => {
+  const onChange: UploadProps<QiniuUploadResponse>['onChange'] = ({
+    fileList: newFileList,
+  }) => {
     setFileList(newFileList);
     const file = newFileList[0];
     const response = file?.response;
@@ -404,12 +379,8 @@ const FormForWeb: React.FC = () => {
             <div className="title_formweb">个人信息</div>
             <div className="personInformationbox">
               <ImgCrop>
-                <Upload<ResponseType>
-                  action={uploadUrl}
-                  data={(file) => ({
-                    token: qiniuToken,
-                    key: buildUploadKey(file.name),
-                  })}
+                <Upload<QiniuUploadResponse>
+                  customRequest={qiniuCustomRequest}
                   fileList={fileList}
                   onChange={onChange}
                   showUploadList={false}

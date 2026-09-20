@@ -15,14 +15,6 @@ export interface GetUserInfoResult {
   data: UserInfo;
 }
 
-export interface GetQiniuTokenResult {
-  code: 200;
-  msg: 'OK';
-  data: {
-    QiniuToken: string;
-  };
-}
-
 export interface ChangeEmailResult {
   code: 200;
   msg: 'OK';
