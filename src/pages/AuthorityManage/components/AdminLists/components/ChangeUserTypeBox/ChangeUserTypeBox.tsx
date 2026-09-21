@@ -70,7 +70,9 @@ const ChangeUserTypeBox: React.FC<ChangeUserTypeBoxProps> = ({
         description={
           previewUser ? (
             <Space align="start">
-              <Avatar src={previewUser.avatar || undefined}>{previewUser.nickname?.[0]}</Avatar>
+              <Avatar src={previewUser.avatar || undefined}>
+                {previewUser.nickname?.[0]}
+              </Avatar>
               <div>
                 <div>{previewUser.nickname}</div>
                 <div>{previewUser.name}</div>
