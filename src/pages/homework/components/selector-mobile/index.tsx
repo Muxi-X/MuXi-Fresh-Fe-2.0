@@ -51,7 +51,7 @@ export const AvatarWrap: React.FC<AvatarWrapProps> = (props) => {
           src={userInfo?.avatar}
           icon={<UserOutlined></UserOutlined>}
         ></Avatar>
-        {renderText(userInfo?.nickname as string)}
+        {renderText(userInfo?.name as string)}
       </div>
     </>
   );

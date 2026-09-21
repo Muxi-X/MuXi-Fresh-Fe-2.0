@@ -16,6 +16,8 @@ import { ConfigProvider } from 'antd';
 import SubmitBeforeJudge from './submitBeforeJudge.tsx';
 import SubmitJudged from './submitJudged.tsx';
 import { DropDownPure } from '../../../components/dropDown';
+import { getCurrentSeason } from '../../../../../utils/GetYearSeason/getReviewYear.ts';
+import { getSelectedTaskList } from '../../../utils/taskApi';
 
 const HomeworkUserSubmitMobile: React.FC = () => {
   const [selected, setSelected] = useState<dataType>();
@@ -28,21 +30,18 @@ const HomeworkUserSubmitMobile: React.FC = () => {
     { id: '', text: '暂时没有作业' },
   ]);
   useEffect(() => {
-    selected &&
-      get(`/task/assigned/list?group=${selected.value}`).then(
-        (res: backType<titleListType>) => {
-          setTaskList([{ id: '', text: '暂时没有作业' }]);
-          setJudged(false);
-          if (res.data.titles?.length) {
-            setTaskList(res.data.titles.reverse());
-          } else {
-            setUploadHistory(undefined);
-          }
-            setTaskList(res.data.titles.reverse());
-          }
-        },
-        null,
-      );
+    if (!selected) return;
+
+    const year = new Date().getFullYear();
+    const semester = getCurrentSeason();
+
+    getSelectedTaskList(selected.value, year, semester).then((res: titleListType) => {
+      setTaskList([{ id: '', text: '暂时没有作业' }]);
+      setJudged(false);
+      if (res.titles?.length) {
+        setTaskList(res.titles.reverse());
+      }
+    }, null);
   }, [selected]);
 
   const handleSwitch = (e: TaskInfoType, id: string) => {
