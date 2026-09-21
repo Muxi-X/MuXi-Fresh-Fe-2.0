@@ -13,10 +13,18 @@ const ReviewGroupSelect: React.FC<ReviewGroupSelectProps> = ({
   changeGroup,
 }) => {
   const groups = useMemo(
-    () => [Group.Product, Group.Frontend, Group.Backend, Group.Design, Group.Operation],
+    () => [
+      Group.All,
+      Group.Product,
+      Group.Frontend,
+      Group.Backend,
+      Group.Design,
+      Group.Operation,
+    ],
     [],
   );
   const chineseGroups: { [key in Group]: string } = {
+    All: '全部',
     // Android: '安卓组',
     Backend: '后端组',
     Design: '设计组',
@@ -56,7 +64,7 @@ const ReviewGroupSelect: React.FC<ReviewGroupSelectProps> = ({
             title: chineseGroups[group],
             label: <div className={'reviewGroups'}>{chineseGroups[group]}</div>,
           }))}
-          style={{ height: '400px' }}
+          style={{ height: 'auto' }}
         />
       </ConfigProvider>
     </div>

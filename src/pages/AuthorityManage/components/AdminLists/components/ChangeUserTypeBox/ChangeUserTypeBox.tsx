@@ -1,5 +1,21 @@
-import { Button, Input, Popconfirm, Space } from 'antd';
+import { Avatar, Button, Input, message, Popconfirm, Space } from 'antd';
 import React, { useState } from 'react';
+import { get } from '../../../../../../fetch.ts';
+
+type PreviewUser = {
+  avatar: string;
+  nickname: string;
+  name: string;
+  email: string;
+  user_type: 'freshman' | 'normal' | 'admin' | 'super_admin';
+};
+
+const userTypeText: Record<PreviewUser['user_type'], string> = {
+  freshman: '新生',
+  normal: '普通成员',
+  admin: '管理员',
+  super_admin: '超级管理员',
+};
 
 type ChangeUserTypeBoxProps = {
   header: string;
@@ -20,13 +36,30 @@ const ChangeUserTypeBox: React.FC<ChangeUserTypeBoxProps> = ({
     setEmail('');
   };
   const [open, setOpen] = useState(false);
-  const handleOpenChange = (newOpen: boolean) => {
+  const [previewUser, setPreviewUser] = useState<PreviewUser | null>(null);
+  const [previewEmail, setPreviewEmail] = useState('');
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const handleOpenChange = async (newOpen: boolean) => {
     if (!newOpen) {
       setOpen(newOpen);
+      setPreviewUser(null);
+      setPreviewEmail('');
       return;
     }
-    if (email !== '') {
-      setOpen(newOpen);
+    const requestedEmail = email.trim();
+    if (requestedEmail === '' || previewLoading) {
+      return;
+    }
+    setPreviewLoading(true);
+    try {
+      const res = await get(`/users/preview?email=${encodeURIComponent(requestedEmail)}`);
+      setPreviewUser(res.data as PreviewUser);
+      setPreviewEmail(requestedEmail);
+      setOpen(true);
+    } catch {
+      void message.error('未找到该邮箱对应的用户，请检查邮箱是否与注册时一致');
+    } finally {
+      setPreviewLoading(false);
     }
   };
   return (
@@ -39,14 +72,37 @@ const ChangeUserTypeBox: React.FC<ChangeUserTypeBoxProps> = ({
       />
       <Popconfirm
         title={`添加${header}`}
-        description={`确定将这个人设置为${header}吗？`}
+        description={
+          previewUser ? (
+            <Space align="start">
+              <Avatar src={previewUser.avatar || undefined}>
+                {previewUser.nickname?.[0]}
+              </Avatar>
+              <div>
+                <div>{previewUser.nickname}</div>
+                <div>{previewUser.name}</div>
+                <div>{previewUser.email}</div>
+                <div>当前身份：{userTypeText[previewUser.user_type]}</div>
+                <div>确定将 {previewUser.email} 设置为{header}吗？</div>
+              </div>
+            </Space>
+          ) : null
+        }
         open={open}
         onOpenChange={handleOpenChange}
         onConfirm={() => {
-          changeUserIdentity(email, user_type, header);
+          changeUserIdentity(previewEmail, user_type, header);
+          setOpen(false);
+          setPreviewUser(null);
+          setPreviewEmail('');
           handleClear();
         }}
-        onCancel={handleClear}
+        onCancel={() => {
+          setOpen(false);
+          setPreviewUser(null);
+          setPreviewEmail('');
+          handleClear();
+        }}
         okText="Yes"
         cancelText="No"
       >

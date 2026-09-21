@@ -33,7 +33,11 @@ const HomeworkUserSubmitMobile: React.FC = () => {
         (res: backType<titleListType>) => {
           setTaskList([{ id: '', text: '暂时没有作业' }]);
           setJudged(false);
-          if (res.data.titles) {
+          if (res.data.titles?.length) {
+            setTaskList(res.data.titles.reverse());
+          } else {
+            setUploadHistory(undefined);
+          }
             setTaskList(res.data.titles.reverse());
           }
         },
