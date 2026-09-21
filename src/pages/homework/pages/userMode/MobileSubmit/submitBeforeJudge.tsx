@@ -72,7 +72,6 @@ const SubmitCompMobile: React.FC<SubmitBeforeJudgeMobileProps> = (props) => {
           <div className="user-mobile-drop">
             {group === 'Frontend' ? (
               <>
-                {'CodePen 链接 :'}
                 <CodePenInput
                   defaultValue={uploadHistory?.[0] || ''}
                   onChange={(url) => setFormData(url ? [url] : [''])}
