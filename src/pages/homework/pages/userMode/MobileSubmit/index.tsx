@@ -35,6 +35,10 @@ const HomeworkUserSubmitMobile: React.FC = () => {
           setJudged(false);
           if (res.data.titles?.length) {
             setTaskList(res.data.titles.reverse());
+          } else {
+            setUploadHistory(undefined);
+          }
+            setTaskList(res.data.titles.reverse());
           }
         },
         null,
