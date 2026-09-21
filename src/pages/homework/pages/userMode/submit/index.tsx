@@ -34,7 +34,7 @@ const HomeworkUserSubmit: React.FC = () => {
   const [defList, setdefList] = useState<Array<userTaskType>>([]);
   const [formData, setformData] = useState<string[]>(['']);
   const [selected, setselected] = useState<string>('');
-  const [submitTime, setSubmitTime] = useState<string>('')
+  const [submitTime, setSubmitTime] = useState<string>('');
   const [group, setGroup] = useState<dataType>({ key: '后端组', value: 'Backend' });
   const [Comment, setComment] = useState<CommentType[]>([]);
   const [currentSubmissionId, setCurrentSubmissionId] = useState<string>('');

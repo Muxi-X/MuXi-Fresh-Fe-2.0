@@ -37,19 +37,24 @@ const ChangeUserTypeBox: React.FC<ChangeUserTypeBoxProps> = ({
   };
   const [open, setOpen] = useState(false);
   const [previewUser, setPreviewUser] = useState<PreviewUser | null>(null);
+  const [previewEmail, setPreviewEmail] = useState('');
   const [previewLoading, setPreviewLoading] = useState(false);
   const handleOpenChange = async (newOpen: boolean) => {
     if (!newOpen) {
       setOpen(newOpen);
+      setPreviewUser(null);
+      setPreviewEmail('');
       return;
     }
-    if (email.trim() === '' || previewLoading) {
+    const requestedEmail = email.trim();
+    if (requestedEmail === '' || previewLoading) {
       return;
     }
     setPreviewLoading(true);
     try {
-      const res = await get(`/users/preview?email=${encodeURIComponent(email)}`);
+      const res = await get(`/users/preview?email=${encodeURIComponent(requestedEmail)}`);
       setPreviewUser(res.data as PreviewUser);
+      setPreviewEmail(requestedEmail);
       setOpen(true);
     } catch {
       void message.error('未找到该邮箱对应的用户，请检查邮箱是否与注册时一致');
@@ -86,14 +91,16 @@ const ChangeUserTypeBox: React.FC<ChangeUserTypeBoxProps> = ({
         open={open}
         onOpenChange={handleOpenChange}
         onConfirm={() => {
-          changeUserIdentity(email, user_type, header);
+          changeUserIdentity(previewEmail, user_type, header);
           setOpen(false);
           setPreviewUser(null);
+          setPreviewEmail('');
           handleClear();
         }}
         onCancel={() => {
           setOpen(false);
           setPreviewUser(null);
+          setPreviewEmail('');
           handleClear();
         }}
         okText="Yes"
