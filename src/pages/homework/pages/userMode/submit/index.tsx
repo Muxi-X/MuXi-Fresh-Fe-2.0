@@ -26,13 +26,15 @@ import HomeComment from '../../adminMode/judge/comment';
 
 const HomeworkUserSubmit: React.FC = () => {
   const [version, setVersion] = useState(0);
-  const [taskList, setTaskList] = useState<taskListType[]>([{ id: '123', text: '123' }]);
+  const [taskList, setTaskList] = useState<taskListType[]>([
+    { id: '', text: '暂时没有作业' },
+  ]);
   const [loading, setLoading] = useState(false);
   const [status, setstatus] = useState<number>(0);
   const [defList, setdefList] = useState<Array<userTaskType>>([]);
   const [formData, setformData] = useState<string[]>(['']);
   const [selected, setselected] = useState<string>('');
-  const [submitTime,setSubmitTime]=useState<string>('')
+  const [submitTime, setSubmitTime] = useState<string>('')
   const [group, setGroup] = useState<dataType>({ key: '后端组', value: 'Backend' });
   const [Comment, setComment] = useState<CommentType[]>([]);
   const [currentSubmissionId, setCurrentSubmissionId] = useState<string>('');
@@ -51,7 +53,7 @@ const HomeworkUserSubmit: React.FC = () => {
   const selectList = defList.map((_, index) => {
     return {
       value: index,
-      label: '提交'+(index+1),
+      label: '提交' + (index + 1),
     };
   });
 
@@ -65,10 +67,11 @@ const HomeworkUserSubmit: React.FC = () => {
           getSelectedTaskList(item.value).then((res: titleListType) => {
             console.log(res);
             setLoading(false);
-            if (res) {
-              setTaskList(res.titles.reverse());
+            if (res?.titles?.length) {
+              const tasks = res.titles.reverse();
+              setTaskList(tasks);
               get(
-                `/task/submitted?user_id=myself&assigned_task_id=${taskList[0].id}`,
+                `/task/submitted?user_id=myself&assigned_task_id=${tasks[0].id}`,
               ).then((resp: backType<userTaskResponseType>) => {
                 console.log(resp.data?.submission_infos, '提交记录');
 
@@ -95,7 +98,7 @@ const HomeworkUserSubmit: React.FC = () => {
 
   const handleVersionChange = (value: number) => {
     if (defList.length === 0) return;
-    
+
     setCurrentSubmissionId(defList[value].submission_id || '');
     setVersion(value);
     setSubmitTime(defList[value].time || '')
@@ -211,9 +214,9 @@ const HomeworkUserSubmit: React.FC = () => {
                 value={selectList[version]?.value || selectList[0]?.value}
                 className="select-version"
               ></Select>
-              
+
             </div>
-            
+
           )}
           {group.value === 'Frontend' ? (
             <CodePenInput
