@@ -6,8 +6,9 @@ import SemesterSelector, { SemesterValue } from '../../../components/semesterSel
 import { defData } from '../../../utils/deData';
 import { dataType, titleListType } from '../../../types';
 import { getSelectedTaskList } from '../../../utils/taskApi';
-import { Collapse, CollapseProps, message } from 'antd';
+import { Button, Collapse, CollapseProps, message, Popconfirm } from 'antd';
 import { getCurrentSeason } from '../../../../../utils/GetYearSeason/getReviewYear.ts';
+import { del } from '../../../../../fetch.ts';
 
 const HomeworkBrowse: React.FC = () => {
   const [taskList, setTaskList] = useState<CollapseProps['items']>([]);
@@ -21,7 +22,28 @@ const HomeworkBrowse: React.FC = () => {
       if (Res && Res.length > 0) {
         const tasks: CollapseProps['items'] = Res.map((itm) => ({
           key: itm.id,
-          label: itm.text,
+          label: (
+            <div className="task-label">
+              <span>{itm.text}</span>
+              <Popconfirm
+                title="确定删除这份作业吗？"
+                description="删除后该作业及学员提交记录将无法恢复。"
+                okText="删除"
+                cancelText="取消"
+                okButtonProps={{ danger: true }}
+                onConfirm={() => handleDelete(itm.id)}
+              >
+                <Button
+                  danger
+                  type="link"
+                  size="small"
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  删除
+                </Button>
+              </Popconfirm>
+            </div>
+          ),
           children: <Form task_id={itm.id} group={g.value}></Form>,
         }));
         setTaskList(tasks.reverse() as CollapseProps['items']);
@@ -40,6 +62,17 @@ const HomeworkBrowse: React.FC = () => {
         ]);
       }
     }, null);
+  };
+
+  const handleDelete = (taskId: string) => {
+    void del(`/task/assigned/${taskId}`)
+      .then(() => {
+        message.success('作业已删除').then(null, null);
+        fetchTaskList(group, year, semester);
+      })
+      .catch((error: unknown) => {
+        message.error(error instanceof Error ? error.message : '删除作业失败').then(null, null);
+      });
   };
 
   useEffect(() => {

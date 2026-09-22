@@ -30,7 +30,7 @@ export async function post(url = '', data = {}, isToken = true): Promise<any> {
     }
   }
 
-  const res = (await response.json()) as { code?: number; [key: string]: unknown };
+  const res = (await response.json()) as { code?: number;[key: string]: unknown };
   if (res.code !== 200) {
     throw new Error(`${res.code}`);
   }
@@ -97,9 +97,44 @@ export async function get(url = '', isToken = true, checkCode = true): Promise<a
     }
   }
 
-  const res = (await response.json()) as { code?: number; [key: string]: unknown };
+  const res = (await response.json()) as { code?: number;[key: string]: unknown };
   if (checkCode && res.code !== 200) {
     throw new Error(`${res.code}`);
+  }
+  return res;
+}
+
+export async function del(url = '', isToken = true): Promise<any> {
+  const headers = new Headers({
+    'Content-Type': 'application/json;charset=utf-8',
+  });
+
+  if (isToken) {
+    const token = localStorage.getItem('token');
+    if (token) headers.append('Authorization', token);
+    else {
+      void message.error('未登录！');
+    }
+  }
+
+  const response = await fetch(`${preUrl}${url}`, {
+    method: 'DELETE',
+    headers,
+  });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      throw new Error('401');
+    } else if (response.status === 400) {
+      const errorData = (await response.json()) as { code: number; msg: string };
+      throw new Error(errorData.msg || `${errorData.code}`);
+    }
+    throw new Error(`${response.status}`);
+  }
+
+  const res = (await response.json()) as { code?: number; msg?: string;[key: string]: unknown };
+  if (res.code !== 200) {
+    throw new Error(res.msg || `${res.code}`);
   }
   return res;
 }
@@ -132,7 +167,7 @@ export async function put(url = '', data = {}, isToken = true): Promise<any> {
     }
   }
 
-  const res = (await response.json()) as { code?: number; [key: string]: unknown };
+  const res = (await response.json()) as { code?: number;[key: string]: unknown };
   if (res.code !== 200) {
     throw new Error(`${res.code}`);
   }
