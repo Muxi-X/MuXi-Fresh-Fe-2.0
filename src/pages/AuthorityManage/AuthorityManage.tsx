@@ -12,6 +12,7 @@ const AuthorityManage = () => {
   const [ordinary, setOrdinary] = useState<AdminRow[]>([]);
 
   const [loading, setLoading] = useState<boolean>(false);
+  const [hasPermission, setHasPermission] = useState<boolean>(true);
 
   const navigate = useNavigate();
   const getUserList = (
@@ -41,9 +42,26 @@ const AuthorityManage = () => {
 
   const [isChange, setIsChange] = useState(false);
   useEffect(() => {
-    getUserList('super_admin', setSuperAdmin, '超级管理员');
-    getUserList('admin', setAdmin, '管理员');
-    getUserList('normal', setOrdinary, '普通用户');
+    get('/form/judge')
+      .then((res: { data?: { user_type?: string } }) => {
+        const userType = res.data?.user_type;
+        if (userType !== 'super_admin') {
+          setHasPermission(false);
+          setLoading(false);
+          void message.error('您非超级管理员，暂无权限');
+          return;
+        }
+        setHasPermission(true);
+        getUserList('super_admin', setSuperAdmin, '超级管理员');
+        getUserList('admin', setAdmin, '管理员');
+        getUserList('normal', setOrdinary, '普通用户');
+      })
+      .catch((e: Error) => {
+        setHasPermission(false);
+        setLoading(false);
+        void message.error('您非超级管理员，暂无权限');
+        console.error(e);
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isChange]);
 
@@ -66,6 +84,16 @@ const AuthorityManage = () => {
       },
     );
   };
+
+  if (!hasPermission) {
+    return (
+      <div className="authorityManageBox">
+        <div className={'authorityManage'} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+          您非超级管理员，暂无权限
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
