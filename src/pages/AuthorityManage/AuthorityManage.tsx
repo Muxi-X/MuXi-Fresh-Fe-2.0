@@ -12,7 +12,9 @@ const AuthorityManage = () => {
   const [ordinary, setOrdinary] = useState<AdminRow[]>([]);
 
   const [loading, setLoading] = useState<boolean>(false);
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [checking, setChecking] = useState(true);
+  const [denied, setDenied] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   const navigate = useNavigate();
   const getUserList = (
@@ -42,24 +44,28 @@ const AuthorityManage = () => {
 
   const [isChange, setIsChange] = useState(false);
   useEffect(() => {
+    setChecking(true);
+    setDenied(false);
+    setFailed(false);
     get('/form/judge')
       .then((res: { data?: { user_type?: string } }) => {
         const userType = res.data?.user_type;
         if (userType !== 'super_admin') {
-          setHasPermission(false);
+          setDenied(true);
+          setChecking(false);
           setLoading(false);
           void message.error('您非超级管理员，暂无权限');
           return;
         }
-        setHasPermission(true);
+        setChecking(false);
         getUserList('super_admin', setSuperAdmin, '超级管理员');
         getUserList('admin', setAdmin, '管理员');
         getUserList('normal', setOrdinary, '普通用户');
       })
       .catch((e: Error) => {
-        setHasPermission(false);
+        setChecking(false);
+        setFailed(true);
         setLoading(false);
-        void message.error('您非超级管理员，暂无权限');
         console.error(e);
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -85,20 +91,58 @@ const AuthorityManage = () => {
     );
   };
 
-  if (hasPermission === false) {
+  if (checking) {
     return (
       <div className="authorityManageBox">
-        <div className={'authorityManage'} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
-          您非超级管理员，暂无权限
+        <div
+          className={'authorityManage'}
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            minHeight: '200px',
+          }}
+        >
+          正在检查权限...
         </div>
       </div>
     );
   }
 
-  if (hasPermission === null) {
+  if (failed) {
     return (
       <div className="authorityManageBox">
-        <div className={'authorityManage'} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+        <div
+          className={'authorityManage'}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            minHeight: '200px',
+          }}
+        >
+          <div>权限检查失败，请稍后重试</div>
+          <button type="button" onClick={() => setIsChange((value) => !value)}>
+            重试
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (denied) {
+    return (
+      <div className="authorityManageBox">
+        <div
+          className={'authorityManage'}
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            minHeight: '200px',
+          }}
+        >
           您非超级管理员，暂无权限
         </div>
       </div>
