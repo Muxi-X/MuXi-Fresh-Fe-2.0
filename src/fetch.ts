@@ -30,7 +30,7 @@ export async function post(url = '', data = {}, isToken = true): Promise<any> {
     }
   }
 
-  const res = (await response.json()) as { code?: number;[key: string]: unknown };
+  const res = (await response.json()) as { code?: number; [key: string]: unknown };
   if (res.code !== 200) {
     throw new Error(`${res.code}`);
   }
