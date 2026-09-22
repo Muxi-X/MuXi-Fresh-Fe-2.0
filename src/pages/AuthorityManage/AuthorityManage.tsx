@@ -12,7 +12,7 @@ const AuthorityManage = () => {
   const [ordinary, setOrdinary] = useState<AdminRow[]>([]);
 
   const [loading, setLoading] = useState<boolean>(false);
-  const [hasPermission, setHasPermission] = useState<boolean>(true);
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
 
   const navigate = useNavigate();
   const getUserList = (
@@ -85,7 +85,17 @@ const AuthorityManage = () => {
     );
   };
 
-  if (!hasPermission) {
+  if (hasPermission === false) {
+    return (
+      <div className="authorityManageBox">
+        <div className={'authorityManage'} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+          您非超级管理员，暂无权限
+        </div>
+      </div>
+    );
+  }
+
+  if (hasPermission === null) {
     return (
       <div className="authorityManageBox">
         <div className={'authorityManage'} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
