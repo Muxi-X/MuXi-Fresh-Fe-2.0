@@ -2,6 +2,12 @@ import { message } from 'antd';
 
 const preUrl = '/api/v2';
 
+type DeleteResponse = {
+  code?: number;
+  msg?: string;
+  [key: string]: unknown;
+};
+
 export async function post(url = '', data = {}, isToken = true): Promise<any> {
   const headers = new Headers({
     'Content-Type': 'application/json;charset=utf-8',
@@ -97,9 +103,48 @@ export async function get(url = '', isToken = true, checkCode = true): Promise<a
     }
   }
 
-  const res = (await response.json()) as { code?: number; [key: string]: unknown };
+  const res = (await response.json()) as { code?: number;[key: string]: unknown };
   if (checkCode && res.code !== 200) {
     throw new Error(`${res.code}`);
+  }
+  return res;
+}
+
+export async function del(url = '', isToken = true): Promise<DeleteResponse> {
+  const headers = new Headers({
+    'Content-Type': 'application/json;charset=utf-8',
+  });
+
+  if (isToken) {
+    const token = localStorage.getItem('token');
+    if (token) headers.append('Authorization', token);
+    else {
+      void message.error('未登录！');
+      throw new Error('未登录！');
+    }
+  }
+
+  const response = await fetch(`${preUrl}${url}`, {
+    method: 'DELETE',
+    headers,
+  });
+
+  if (!response.ok) {
+    let errorMessage = `${response.status}`;
+    try {
+      const errorData = (await response.json()) as Partial<DeleteResponse>;
+      if (typeof errorData.msg === 'string' && errorData.msg) {
+        errorMessage = errorData.msg;
+      }
+    } catch {
+      errorMessage = `${response.status}`;
+    }
+    throw new Error(errorMessage);
+  }
+
+  const res = (await response.json()) as DeleteResponse;
+  if (res.code !== 200) {
+    throw new Error(res.msg || `${res.code}`);
   }
   return res;
 }
@@ -132,7 +177,7 @@ export async function put(url = '', data = {}, isToken = true): Promise<any> {
     }
   }
 
-  const res = (await response.json()) as { code?: number; [key: string]: unknown };
+  const res = (await response.json()) as { code?: number;[key: string]: unknown };
   if (res.code !== 200) {
     throw new Error(`${res.code}`);
   }
