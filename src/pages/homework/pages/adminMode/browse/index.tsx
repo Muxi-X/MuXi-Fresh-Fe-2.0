@@ -15,6 +15,7 @@ const HomeworkBrowse: React.FC = () => {
   const [group, setGroup] = useState<dataType>(defData[0]);
   const [year, setYear] = useState<number>(new Date().getFullYear());
   const [semester, setSemester] = useState<string>(getCurrentSeason());
+  const [deletingTaskIds, setDeletingTaskIds] = useState<Set<string>>(new Set());
 
   const fetchTaskList = (g: dataType, y: number, s: string) => {
     void getSelectedTaskList(g.value, y, s).then((res: titleListType) => {
@@ -37,6 +38,8 @@ const HomeworkBrowse: React.FC = () => {
                   danger
                   type="link"
                   size="small"
+                  disabled={deletingTaskIds.has(itm.id)}
+                  loading={deletingTaskIds.has(itm.id)}
                   onClick={(event) => event.stopPropagation()}
                 >
                   删除
@@ -65,13 +68,25 @@ const HomeworkBrowse: React.FC = () => {
   };
 
   const handleDelete = (taskId: string) => {
+    if (deletingTaskIds.has(taskId)) return;
+
+    setDeletingTaskIds((pendingIds) => new Set(pendingIds).add(taskId));
     void del(`/task/assigned/${taskId}`)
       .then(() => {
         message.success('作业已删除').then(null, null);
         fetchTaskList(group, year, semester);
       })
       .catch((error: unknown) => {
-        message.error(error instanceof Error ? error.message : '删除作业失败').then(null, null);
+        message
+          .error(error instanceof Error ? error.message : '删除作业失败')
+          .then(null, null);
+      })
+      .finally(() => {
+        setDeletingTaskIds((pendingIds) => {
+          const nextPendingIds = new Set(pendingIds);
+          nextPendingIds.delete(taskId);
+          return nextPendingIds;
+        });
       });
   };
 

@@ -2,6 +2,12 @@ import { message } from 'antd';
 
 const preUrl = '/api/v2';
 
+type DeleteResponse = {
+  code?: number;
+  msg?: string;
+  [key: string]: unknown;
+};
+
 export async function post(url = '', data = {}, isToken = true): Promise<any> {
   const headers = new Headers({
     'Content-Type': 'application/json;charset=utf-8',
@@ -104,7 +110,7 @@ export async function get(url = '', isToken = true, checkCode = true): Promise<a
   return res;
 }
 
-export async function del(url = '', isToken = true): Promise<any> {
+export async function del(url = '', isToken = true): Promise<DeleteResponse> {
   const headers = new Headers({
     'Content-Type': 'application/json;charset=utf-8',
   });
@@ -114,6 +120,7 @@ export async function del(url = '', isToken = true): Promise<any> {
     if (token) headers.append('Authorization', token);
     else {
       void message.error('未登录！');
+      throw new Error('未登录！');
     }
   }
 
@@ -123,16 +130,19 @@ export async function del(url = '', isToken = true): Promise<any> {
   });
 
   if (!response.ok) {
-    if (response.status === 401) {
-      throw new Error('401');
-    } else if (response.status === 400) {
-      const errorData = (await response.json()) as { code: number; msg: string };
-      throw new Error(errorData.msg || `${errorData.code}`);
+    let errorMessage = `${response.status}`;
+    try {
+      const errorData = (await response.json()) as Partial<DeleteResponse>;
+      if (typeof errorData.msg === 'string' && errorData.msg) {
+        errorMessage = errorData.msg;
+      }
+    } catch {
+      errorMessage = `${response.status}`;
     }
-    throw new Error(`${response.status}`);
+    throw new Error(errorMessage);
   }
 
-  const res = (await response.json()) as { code?: number; msg?: string;[key: string]: unknown };
+  const res = (await response.json()) as DeleteResponse;
   if (res.code !== 200) {
     throw new Error(res.msg || `${res.code}`);
   }
