@@ -319,8 +319,8 @@ const FormForWeb: React.FC = () => {
   useEffect(() => {
     // 获取当前日期和时间
     const currentDate = new Date();
-    // 设置目标日期为9月23日23点59分
-    const targetDate = new Date(currentDate.getFullYear(), 8, 26, 23, 59, 0); // 月份从0开始，所以8代表9月
+    // 设置目标日期为10月27日23点59分
+    const targetDate = new Date(currentDate.getFullYear(), 9, 27, 23, 59, 0); // 月份从0开始，所以9代表10月
 
     // 比较当前日期和目标日期
     if (currentDate > targetDate) {
