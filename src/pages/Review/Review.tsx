@@ -59,15 +59,18 @@ const Review = () => {
   };
 
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
     post('/review/', { ...reviewFilter, page, page_size: PAGE_SIZE })
       .then((r: ReviewList) => {
+        if (cancelled) return;
         const { rows, total } = r.data;
         setReviewList(rows);
         setTotal(total);
         setLoading(false);
       })
       .catch((e: Error) => {
+        if (cancelled) return;
         setLoading(false);
         if (Number(e.message) === 10003) {
           void message.error('您无此权限，请退出！').then(() => {
@@ -78,6 +81,9 @@ const Review = () => {
           console.error(e);
         }
       });
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reviewFilter, page, refreshFlag]);
 

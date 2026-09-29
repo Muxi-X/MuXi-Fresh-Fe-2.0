@@ -265,11 +265,14 @@ const ReviewTable: React.FC<ReviewTableProps> = ({
     [setReviewTable],
   );
 
-  // 保存面评成功后：关闭抽屉，再让父组件重拉当前页列表，以后端返回为准
-  const handleCommentSaved = useCallback(() => {
-    setCommentRecord(null);
-    onAfterSave();
-  }, [onAfterSave]);
+  // 保存面评成功后：仅当抽屉仍停留在被保存的那一行时才关闭，再让父组件重拉当前页列表
+  const handleCommentSaved = useCallback(
+    (formId: string) => {
+      setCommentRecord((prev) => (prev && prev.form_id === formId ? null : prev));
+      onAfterSave();
+    },
+    [onAfterSave],
+  );
 
   return (
     <div className="review-table-container">

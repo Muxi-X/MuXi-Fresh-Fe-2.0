@@ -10,7 +10,7 @@ type InterviewCommentDrawerProps = {
   open: boolean;
   record: ReviewRow | null;
   onClose: () => void;
-  onSaved: () => void;
+  onSaved: (formId: string) => void;
 };
 
 const InterviewCommentDrawer: React.FC<InterviewCommentDrawerProps> = ({
@@ -42,7 +42,7 @@ const InterviewCommentDrawer: React.FC<InterviewCommentDrawerProps> = ({
         rev,
       });
       void message.success('保存成功');
-      onSaved();
+      onSaved(record.form_id);
     } catch (e) {
       void message.error(
         e instanceof Error && e.message ? e.message : '保存失败，请稍后重试',

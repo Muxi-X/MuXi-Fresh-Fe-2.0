@@ -70,9 +70,10 @@ export async function postWithMsg(url = '', data = {}, isToken = true): Promise<
     if (response.status === 401) {
       throw new Error('401');
     } else if (response.status === 400) {
-      const errorData = (await response.json()) as { code: number; msg: string };
-      throw new Error(`${errorData.code}`);
+      const errorData = (await response.json()) as { code: number; msg?: string };
+      throw new Error(errorData.msg || `${errorData.code}`);
     }
+    throw new Error(`${response.status}`);
   }
 
   const res = (await response.json()) as {
