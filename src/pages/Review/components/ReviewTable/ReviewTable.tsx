@@ -3,9 +3,10 @@ import './ReviewTable.less';
 import type { ColumnsType, TableProps } from 'antd/es/table';
 import { AdmissionStatus, ReviewRow, Gender } from '../../ReviewList.ts';
 import { Link } from 'react-router-dom';
-import { message, Select, Table, Input } from 'antd';
+import { Button, Input, message, Select, Space, Table, Tag } from 'antd';
 import { post } from '../../../../fetch.ts';
 import type { FilterValue, SorterResult } from 'antd/es/table/interface';
+import InterviewCommentDrawer from '../InterviewCommentDrawer/InterviewCommentDrawer.tsx';
 
 type ReviewTableProps = {
   reviewList: ReviewRow[];
@@ -16,6 +17,7 @@ type ReviewTableProps = {
   searchText: string;
   onSearch: (value: string) => void;
   onPageChange: (page: number) => void;
+  onAfterSave: () => void;
 };
 const ReviewTable: React.FC<ReviewTableProps> = ({
   reviewList,
@@ -26,8 +28,10 @@ const ReviewTable: React.FC<ReviewTableProps> = ({
   searchText,
   onSearch,
   onPageChange,
+  onAfterSave,
 }) => {
   const [reviewTable, setReviewTable] = useState(reviewList);
+  const [commentRecord, setCommentRecord] = useState<ReviewRow | null>(null);
 
   useEffect(() => {
     setReviewTable(reviewList);
@@ -175,13 +179,25 @@ const ReviewTable: React.FC<ReviewTableProps> = ({
       title: '面试评价',
       key: 'interview_evaluation',
       render: (_, record: ReviewRow) => (
-        <Link
-          // to={`http://localhost:3000/quicknew?title=${record.name}面试评价`}
-          to={`https://forum.muxixyz.com/quicknew?title=${record.name}面试评价`}
-          target="_blank"
-        >
-          去填写面评
-        </Link>
+        <div>
+          {record.interview_comment ? (
+            <Space size="small">
+              <Tag color="green">已填写</Tag>
+              <Button type="link" onClick={() => setCommentRecord(record)}>
+                查看 / 编辑面评
+              </Button>
+            </Space>
+          ) : (
+            <Button type="link" onClick={() => setCommentRecord(record)}>
+              去填写面评
+            </Button>
+          )}
+          {record.interview_comment_by && record.interview_comment_at && (
+            <div className="comment-meta">
+              最后修改：{record.interview_comment_by} · {record.interview_comment_at}
+            </div>
+          )}
+        </div>
       ),
     },
     {
@@ -249,6 +265,12 @@ const ReviewTable: React.FC<ReviewTableProps> = ({
     [setReviewTable],
   );
 
+  // 保存面评成功后：关闭抽屉，再让父组件重拉当前页列表，以后端返回为准
+  const handleCommentSaved = useCallback(() => {
+    setCommentRecord(null);
+    onAfterSave();
+  }, [onAfterSave]);
+
   return (
     <div className="review-table-container">
       <div className="search-container">
@@ -276,6 +298,12 @@ const ReviewTable: React.FC<ReviewTableProps> = ({
           total: total,
         }}
         rowKey={(r) => r.schedule_id}
+      />
+      <InterviewCommentDrawer
+        open={commentRecord !== null}
+        record={commentRecord}
+        onClose={() => setCommentRecord(null)}
+        onSaved={handleCommentSaved}
       />
     </div>
   );

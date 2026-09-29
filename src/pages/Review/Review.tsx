@@ -27,6 +27,7 @@ const Review = () => {
   const [page, setPage] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(false);
   const [exporting, setExporting] = useState<boolean>(false);
+  const [refreshFlag, setRefreshFlag] = useState<number>(0);
 
   const navigate = useNavigate();
 
@@ -78,7 +79,7 @@ const Review = () => {
         }
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reviewFilter, page]);
+  }, [reviewFilter, page, refreshFlag]);
 
   const handleExport = async () => {
     setExporting(true);
@@ -129,6 +130,7 @@ const Review = () => {
           searchText={reviewFilter.name}
           onSearch={changeName}
           onPageChange={setPage}
+          onAfterSave={() => setRefreshFlag((f) => f + 1)}
         />
       </div>
     </div>

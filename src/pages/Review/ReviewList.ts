@@ -27,6 +27,10 @@ export interface ReviewRow {
   understanding: string;
   user_id: string;
   gender: Gender;
+  interview_comment: string;
+  interview_comment_rev: number;
+  interview_comment_by: string;
+  interview_comment_at: string;
 }
 
 export interface ReviewList {

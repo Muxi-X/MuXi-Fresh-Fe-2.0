@@ -43,6 +43,49 @@ export async function post(url = '', data = {}, isToken = true): Promise<any> {
   return res;
 }
 
+/**
+ * 与 post 行为一致，仅业务失败（code !== 200）时抛出后端 msg（缺省回退为 code）。
+ * 供需要区分具体业务错误文案的场景使用（如面评保存的版本冲突提示）。
+ */
+export async function postWithMsg(url = '', data = {}, isToken = true): Promise<any> {
+  const headers = new Headers({
+    'Content-Type': 'application/json;charset=utf-8',
+  });
+
+  if (isToken) {
+    const token = localStorage.getItem('token');
+    if (token) headers.append('Authorization', token);
+    else {
+      void message.error('未登录！');
+    }
+  }
+
+  const response = await fetch(`${preUrl}${url}`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      throw new Error('401');
+    } else if (response.status === 400) {
+      const errorData = (await response.json()) as { code: number; msg: string };
+      throw new Error(`${errorData.code}`);
+    }
+  }
+
+  const res = (await response.json()) as {
+    code?: number;
+    msg?: string;
+    [key: string]: unknown;
+  };
+  if (res.code !== 200) {
+    throw new Error(res.msg || `${res.code}`);
+  }
+  return res;
+}
+
 export async function postBlob(url = '', data = {}, isToken = true) {
   const headers = new Headers({
     'Content-Type': 'application/json;charset=utf-8',
