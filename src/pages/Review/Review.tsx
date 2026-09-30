@@ -27,6 +27,7 @@ const Review = () => {
   const [page, setPage] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(false);
   const [exporting, setExporting] = useState<boolean>(false);
+  const [refreshFlag, setRefreshFlag] = useState<number>(0);
 
   const navigate = useNavigate();
 
@@ -58,15 +59,18 @@ const Review = () => {
   };
 
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
     post('/review/', { ...reviewFilter, page, page_size: PAGE_SIZE })
       .then((r: ReviewList) => {
+        if (cancelled) return;
         const { rows, total } = r.data;
         setReviewList(rows);
         setTotal(total);
         setLoading(false);
       })
       .catch((e: Error) => {
+        if (cancelled) return;
         setLoading(false);
         if (Number(e.message) === 10003) {
           void message.error('您无此权限，请退出！').then(() => {
@@ -77,8 +81,11 @@ const Review = () => {
           console.error(e);
         }
       });
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reviewFilter, page]);
+  }, [reviewFilter, page, refreshFlag]);
 
   const handleExport = async () => {
     setExporting(true);
@@ -129,6 +136,7 @@ const Review = () => {
           searchText={reviewFilter.name}
           onSearch={changeName}
           onPageChange={setPage}
+          onAfterSave={() => setRefreshFlag((f) => f + 1)}
         />
       </div>
     </div>
