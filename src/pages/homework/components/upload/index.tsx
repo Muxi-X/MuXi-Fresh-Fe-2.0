@@ -110,7 +110,12 @@ const Uploader: React.FC<UploaderProps> = (props) => {
           if (subscription) subscription.unsubscribe();
         },
         complete: (res) => {
-          options.onSuccess(res);
+          const responseKey = (res as { key?: unknown } | null)?.key;
+          if (typeof responseKey !== 'string' || !responseKey.trim()) {
+            options.onError(new Error('七牛上传响应缺少有效文件 key'));
+          } else {
+            options.onSuccess(res);
+          }
           if (subscription) subscription.unsubscribe();
         },
       });

@@ -4,24 +4,51 @@ interface UploadItemLike {
   url?: unknown;
 }
 
-const invalidUrlFragments = ['undefined', 'null', 'nan', '[object object]'];
+const invalidInterpolatedValues = new Set([
+  'undefined',
+  'null',
+  'nan',
+  '[object object]',
+]);
+
+const decodeUrlComponent = (component: string): string => {
+  try {
+    return decodeURIComponent(component);
+  } catch {
+    return component;
+  }
+};
+
+const hasInvalidInterpolatedValue = (url: URL): boolean => {
+  const pathSegments = url.pathname.split('/').map(decodeUrlComponent);
+  const hash = decodeUrlComponent(url.hash.slice(1));
+  const components = [
+    ...url.hostname.split('.'),
+    url.username,
+    url.password,
+    ...pathSegments,
+    ...Array.from(url.searchParams.keys()),
+    ...Array.from(url.searchParams.values()),
+    hash,
+  ];
+
+  return components.some((component) =>
+    invalidInterpolatedValues.has(component.trim().toLowerCase()),
+  );
+};
 
 export const isValidAttachmentUrl = (value: unknown): value is string => {
   if (typeof value !== 'string') return false;
 
   const url = value.trim();
-  if (
-    !url ||
-    invalidUrlFragments.some((fragment) => url.toLowerCase().includes(fragment))
-  ) {
-    return false;
-  }
+  if (!url) return false;
 
   try {
     const parsed = new URL(url);
     return (
       (parsed.protocol === 'http:' || parsed.protocol === 'https:') &&
-      Boolean(parsed.hostname)
+      Boolean(parsed.hostname) &&
+      !hasInvalidInterpolatedValue(parsed)
     );
   } catch {
     return false;

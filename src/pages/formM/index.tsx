@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { debounce } from '../../utils/Debounce/debounce.ts';
 import { getYear } from '../../utils/GetYearSeason/getFormYear.ts';
 import { grader } from '../../utils/grader/grader.ts';
+import { hasRecruitDeadlinePassed } from '../../utils/recruitDeadline';
 
 const FormForMobile: React.FC = () => {
   const navigate = useNavigate();
@@ -309,16 +310,16 @@ const FormForMobile: React.FC = () => {
   const graders = useMemo(() => grader(), []);
 
   useEffect(() => {
-    // 获取当前日期和时间
-    const currentDate = new Date();
-    // 设置目标日期
-    const targetDate = new Date(currentDate.getFullYear(), 9, 9, 0, 0, 0); // 月份从0开始，所以9代表10月
-
-    // 比较当前日期和目标日期
-    if (currentDate > targetDate) {
+    let alive = true;
+    void hasRecruitDeadlinePassed().then((isPastDeadline) => {
+      if (!alive || !isPastDeadline) return;
       setIsPastDeadline(true);
       void message.warning('未在报名时间内');
-    }
+    });
+
+    return () => {
+      alive = false;
+    };
   }, []);
 
   const element: JSX.Element[] = [];
