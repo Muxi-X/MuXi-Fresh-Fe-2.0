@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { TaskInfoType } from '../../../types';
-import { post } from '../../../../../fetch.ts';
+import { postWithMsg } from '../../../../../fetch.ts';
 import { message, UploadProps } from 'antd';
 import { root } from '../../../utils/deData.ts';
 import FileLink from '../../../components/files';
 import Uploader from '../../../components/upload';
 import CodePenInput from '../../../components/codepen';
 import { isCodePenUrl } from '../../../utils/codepen';
-import { debounce } from '../../../../../utils/Debounce/debounce.ts';
+import {
+  isValidAttachmentUrl,
+  normalizeAttachmentUrls,
+} from '../../../utils/attachmentUrls';
 
 interface SubmitBeforeJudgeMobileProps {
   currentTaskID: string | undefined;
@@ -17,35 +20,49 @@ interface SubmitBeforeJudgeMobileProps {
 }
 const SubmitCompMobile: React.FC<SubmitBeforeJudgeMobileProps> = (props) => {
   const [formData, setFormData] = useState<string[]>();
+  const [uploadPending, setUploadPending] = useState(false);
+  const [uploadFailed, setUploadFailed] = useState(false);
   const { currentTaskInfo, uploadHistory, currentTaskID, group } = props;
   const handleSubmit = () => {
     if (!currentTaskID) {
       message.error('暂时还没有作业哦').then(null, null);
       return;
     }
+    if (uploadPending) {
+      message.error('附件仍在上传，请稍后提交').then(null, null);
+      return;
+    }
+    if (uploadFailed) {
+      message.error('存在上传失败的附件，请删除失败项或重新上传').then(null, null);
+      return;
+    }
+    const urls = formData ?? [];
+    if (urls.some((url) => !isValidAttachmentUrl(url))) {
+      message.error('存在无效附件，请重新上传').then(null, null);
+      return;
+    }
     if (group === 'Frontend' && (!formData?.[0] || !isCodePenUrl(formData[0]))) {
       message.error('请填写正确的 CodePen 链接').then(null, null);
       return;
     }
-    post(`/task/submitted`, {
+    postWithMsg(`/task/submitted`, {
       assignedTaskID: currentTaskID,
-      urls: formData,
+      urls,
     })
       .then(() => {
         message.success('提交成功').then(null, null);
       })
-      .catch(() => {
-        message.error(`提交失败`).then(null, null);
+      .catch((error: unknown) => {
+        message
+          .error(error instanceof Error ? error.message : '提交失败')
+          .then(null, null);
       });
   };
 
   const handleChangeUpload = (e: UploadProps['fileList']) => {
-    const tmpList = e?.map((item) => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      if (item?.response) return `${root}${item.response.key as string}`;
-      else return `${item.url as string}`;
-    });
-    setFormData(tmpList);
+    setUploadPending(Boolean(e?.some((item) => item.status === 'uploading')));
+    setUploadFailed(Boolean(e?.some((item) => item.status === 'error')));
+    setFormData(normalizeAttachmentUrls(e, root));
   };
   return (
     <>
@@ -82,7 +99,7 @@ const SubmitCompMobile: React.FC<SubmitBeforeJudgeMobileProps> = (props) => {
                 {'作业附件 :'}
                 <Uploader
                   mobile
-                  onChange={debounce(handleChangeUpload, 400)}
+                  onChange={handleChangeUpload}
                   defaultList={uploadHistory}
                 ></Uploader>
               </>

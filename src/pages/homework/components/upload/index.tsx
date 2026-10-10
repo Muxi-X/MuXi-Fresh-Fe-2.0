@@ -12,6 +12,7 @@ import Submit from '../button';
 import './index.less';
 import { root } from '../../utils/deData';
 import { buildUploadKey } from '../../../../utils/jwt.ts';
+import { normalizeAttachmentUrls } from '../../utils/attachmentUrls';
 
 const { Dragger } = Upload;
 interface UploaderProps {
@@ -29,7 +30,12 @@ const Uploader: React.FC<UploaderProps> = (props) => {
   useEffect(() => {
     get('/auth/get-qntoken').then(
       (res) => {
-        setQntoken(res.data.QiniuToken as string);
+        const token: unknown = res?.data?.QiniuToken as unknown;
+        if (typeof token === 'string' && token) {
+          setQntoken(token);
+        } else {
+          void message.error('获取上传凭证失败，请刷新页面后重试');
+        }
       },
       (e) => {
         void message.error('网络状况不佳');
@@ -57,16 +63,13 @@ const Uploader: React.FC<UploaderProps> = (props) => {
     }
   }, [defaultList]);
   const handleFileChange: UploadProps['onChange'] = (info) => {
-    // eslint-disable-next-line no-constant-condition
-    if (info.file.status === 'done' || 'uploading') {
-      if (info.file.status === 'done') {
-        message.success(`${info.file.name} 文件上传成功`);
-      }
-      setfileList(info.fileList);
-      onChange(info.fileList);
+    if (info.file.status === 'done') {
+      message.success(`${info.file.name} 文件上传成功`);
     } else if (info.file.status === 'error') {
       message.error(`${info.file.name} 文件上传失败`);
     }
+    setfileList(info.fileList);
+    onChange(info.fileList);
   };
   const handleRemove = (file: any) => {
     if (fileList) {
@@ -78,30 +81,47 @@ const Uploader: React.FC<UploaderProps> = (props) => {
     }
   };
   const customRequest = (options: any) => {
-    const key = buildUploadKey(options.file.name as string);
+    let key: string;
+    try {
+      if (!qntoken) throw new Error('上传凭证无效');
+      key = buildUploadKey(options.file.name as string);
+    } catch (error) {
+      options.onError(error instanceof Error ? error : new Error('无法准备上传'));
+      return;
+    }
     const putExtra = {
       fname: `${Date.now()}--${options.file.name as string}`,
     };
     const config = {};
-    const observable = qiniu.upload(options.file as File, key, qntoken, putExtra, config);
-    // 监听上传
-    const subscription: any = observable.subscribe({
-      next: (res) => {
-        options.onProgress({ percent: res.total.percent });
-      },
-      error: (err) => {
-        options.onError(err);
-        if (subscription) {
-          subscription.unsubscribe();
-        }
-      },
-      complete: (res) => {
-        options.onSuccess(res);
-        if (subscription) {
-          subscription.unsubscribe();
-        }
-      },
-    });
+    try {
+      const observable = qiniu.upload(
+        options.file as File,
+        key,
+        qntoken,
+        putExtra,
+        config,
+      );
+      const subscription: any = observable.subscribe({
+        next: (res) => {
+          options.onProgress({ percent: res.total.percent });
+        },
+        error: (err) => {
+          options.onError(err);
+          if (subscription) subscription.unsubscribe();
+        },
+        complete: (res) => {
+          const responseKey = (res as { key?: unknown } | null)?.key;
+          if (typeof responseKey !== 'string' || !responseKey.trim()) {
+            options.onError(new Error('七牛上传响应缺少有效文件 key'));
+          } else {
+            options.onSuccess(res);
+          }
+          if (subscription) subscription.unsubscribe();
+        },
+      });
+    } catch (error) {
+      options.onError(error instanceof Error ? error : new Error('文件上传失败'));
+    }
   };
   return (
     <>
@@ -124,18 +144,7 @@ const Uploader: React.FC<UploaderProps> = (props) => {
             <FileLinkPure
               preview
               className="file-preview-mobile"
-              data={
-                fileList &&
-                fileList.map((item) => {
-                  const key: string | undefined = item.response?.key as
-                    | string
-                    | undefined;
-                  if (key) {
-                    return `${root}${key}`;
-                  }
-                  return item.url as string;
-                })
-              }
+              data={normalizeAttachmentUrls(fileList, root)}
             ></FileLinkPure>
           ) : (
             <img
@@ -156,6 +165,7 @@ const Uploader: React.FC<UploaderProps> = (props) => {
                 onClick={(e) => {
                   e.stopPropagation();
                   setfileList(undefined);
+                  onChange([]);
                   message.success('文件清除成功');
                 }}
               >

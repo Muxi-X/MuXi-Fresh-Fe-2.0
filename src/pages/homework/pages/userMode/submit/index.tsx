@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import UploadSection from '../../../components/uploadWrap';
 import { debounce } from '../../../../../utils/Debounce/debounce.ts';
-import { get, post } from '../../../../../fetch.ts';
+import { get, postWithMsg } from '../../../../../fetch.ts';
 import { getSelectedTaskList } from '../../../utils/taskApi';
 import {
   backType,
@@ -23,6 +23,10 @@ import CodePenInput from '../../../components/codepen';
 import { isCodePenUrl } from '../../../utils/codepen';
 import './index.less';
 import HomeComment from '../../adminMode/judge/comment';
+import {
+  isValidAttachmentUrl,
+  normalizeAttachmentUrls,
+} from '../../../utils/attachmentUrls';
 
 const HomeworkUserSubmit: React.FC = () => {
   const [version, setVersion] = useState(0);
@@ -33,6 +37,8 @@ const HomeworkUserSubmit: React.FC = () => {
   const [status, setstatus] = useState<number>(0);
   const [defList, setdefList] = useState<Array<userTaskType>>([]);
   const [formData, setformData] = useState<string[]>(['']);
+  const [uploadPending, setUploadPending] = useState(false);
+  const [uploadFailed, setUploadFailed] = useState(false);
   const [selected, setselected] = useState<string>('');
   const [submitTime, setSubmitTime] = useState<string>('');
   const [group, setGroup] = useState<dataType>({ key: '后端组', value: 'Backend' });
@@ -106,36 +112,45 @@ const HomeworkUserSubmit: React.FC = () => {
   };
 
   const handleSubmit = () => {
-    if (!formData[0]) {
-      message.error('作业内容不能为空').then(null, null);
+    if (uploadPending) {
+      void message.error('附件仍在上传，请稍后提交');
       return;
     }
-    if (group.value === 'Frontend' && !isCodePenUrl(formData[0])) {
-      message.error('请填写正确的 CodePen 链接').then(null, null);
+    if (uploadFailed) {
+      void message.error('存在上传失败的附件，请删除失败项或重新上传');
       return;
     }
-    console.log(formData);
-    post(`/task/submitted`, {
-      urls: formData,
+    const urls = formData.filter((url) => url);
+    if (urls.some((url) => !isValidAttachmentUrl(url))) {
+      void message.error('存在无效附件，请重新上传');
+      return;
+    }
+    if (!urls.length) {
+      void message.error('作业内容不能为空');
+      return;
+    }
+    if (group.value === 'Frontend' && !isCodePenUrl(urls[0])) {
+      void message.error('请填写正确的 CodePen 链接');
+      return;
+    }
+    postWithMsg(`/task/submitted`, {
+      urls,
       assignedTaskID: selected,
     })
       .then(() => {
         message.success('提交成功').then(null, null);
         handleSwitch(selected);
       })
-      .catch(() => {
-        message.error(`提交失败`).then(null, null);
+      .catch((error: unknown) => {
+        message
+          .error(error instanceof Error ? error.message : '提交失败')
+          .then(null, null);
       });
   };
   const handleChangeUpload = (e: UploadProps['fileList']) => {
-    if (e && e[0]) {
-      const tmpList = e?.map((item) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        if (item?.response) return ` ${root}${item?.response?.key as string}`;
-        else return `${item.url as string}`;
-      });
-      setformData(tmpList ? tmpList.filter((item) => item != 'undefined') : ['']);
-    }
+    setUploadPending(Boolean(e?.some((item) => item.status === 'uploading')));
+    setUploadFailed(Boolean(e?.some((item) => item.status === 'error')));
+    setformData(normalizeAttachmentUrls(e, root));
   };
   const handleSwitch = (id: string | undefined): void => {
     if (id) {
